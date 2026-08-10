@@ -2,12 +2,10 @@ name: Build Base Container Images
 
 on:
   push:
-    branches:
-      - main
+    tags:
+      - 'v*'
+
   pull_request:
-  schedule:
-    # Rebuild daily at 5 AM UTC (weekdays only)
-    - cron: '0 5 * * 1-5'
   workflow_dispatch:
 
 env:
@@ -91,15 +89,8 @@ jobs:
           flavor: |
             latest=false
           tags: |
-            # Prefix dynamic tags with the variant to prevent overwrites between matrix entries
-            type=schedule,pattern={{date 'YYYYMMDD'}},prefix=${{ matrix.tag_prefix }}-
-            type=ref,event=branch,prefix=${{ matrix.tag_prefix }}-
-            type=ref,event=tag,prefix=${{ matrix.tag_prefix }}-
-            type=ref,event=pr,prefix=${{ matrix.tag_prefix }}-
-            type=sha,prefix=${{ matrix.tag_prefix }}-
-            type=raw,value=${{ matrix.tag_prefix }}
-            type=raw,value=latest,enable=${{ matrix.publish_latest }}
-
+            type=semver,pattern={{version}},prefix=${{ matrix.tag_prefix }}-
+            
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0 # v4.4.0
         with:
