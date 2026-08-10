@@ -1,0 +1,68 @@
+repos:
+  #
+  # General hygiene
+  #
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-json
+      - id: check-yaml
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: detect-private-key
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: mixed-line-ending
+
+  # Shell
+  #
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.11.0.1
+    hooks:
+      - id: shellcheck
+
+  - repo: https://github.com/scop/pre-commit-shfmt
+    rev: v3.13.1-1
+    hooks:
+      - id: shfmt
+        args:
+          - -w
+          - -i
+          - "2"
+
+  #
+  # Secrets
+  #
+  - repo: https://github.com/betterleaks/betterleaks
+    rev: v1.7.3
+    hooks:
+      - id: betterleaks
+
+  #
+  # Renovate
+  #
+  - repo: https://github.com/renovatebot/pre-commit-hooks
+    rev: 44.14.1
+    hooks:
+      - id: renovate-config-validator
+
+  #
+  # Conventional commits
+  #
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v4.4.0
+    hooks:
+      - id: conventional-pre-commit
+        stages:
+          - commit-msg
+        args:
+          - feat
+          - fix
+          - chore
+          - docs
+          - refactor
+          - build
+          - ci
+          - perf
+          - test
+          - revert

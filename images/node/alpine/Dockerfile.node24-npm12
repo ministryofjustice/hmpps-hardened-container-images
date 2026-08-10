@@ -1,0 +1,44 @@
+# HMPPS Node.js Base Image
+# Pinned to tag 24.19.0-alpine3.24 via sha.
+FROM node@sha256:d32cdf619f63fe0471182d08996dd516c6275bb5fd31ae06e55a570bd9e1ad43 AS base
+
+# Metadata
+LABEL org.opencontainers.image.title="HMPPS Node.js Base Image"
+LABEL org.opencontainers.image.description="Base container image for Node.js applications in HMPPS"
+LABEL org.opencontainers.image.source="https://github.com/ministryofjustice/hmpps-base-container-images"
+LABEL org.opencontainers.image.vendor="Ministry of Justice"
+LABEL hmpps.node.base_variant="24.19.0-alpine3.24"
+LABEL hmpps.node.base_image="node"
+LABEL org.opencontainers.image.base.name="node:24.19.0-alpine3.24"
+
+# Create non-root app user (consistent with Java images)
+ARG APP_UID=2000
+ARG APP_GID=2000
+RUN addgroup -g ${APP_GID} -S appgroup && \
+    adduser -u ${APP_UID} -S appuser -G appgroup
+
+# Timezone setup (base image already includes tzdata and ca-certificates)
+ENV TZ="Europe/London"
+RUN ln -snf /usr/share/zoneinfo/${TZ} /etc/localtime && echo ${TZ} > /etc/timezone
+
+# Security upgrades in separate stage for cache control
+# Build with: docker buildx build --no-cache-filter=security-upgrades ...
+FROM base AS security-upgrades
+# NPM upgrade can be reverted when the default version gets bumps in the base
+RUN npm install -g npm@12.0.2 && npm cache clean --force && \
+    find /usr/local/lib/node_modules -name "*.md" -delete && \
+    find /usr/local/lib/node_modules -name "*.txt" -delete && \
+    find /usr/local/lib/node_modules -name "CHANGELOG*" -delete && \
+    find /usr/local/lib/node_modules -name "*.ts" ! -name "*.d.ts" -delete && \
+    find /usr/local/lib/node_modules -name "*.map" -delete && \
+    find /usr/local/lib/node_modules -type d -name "test" -exec rm -rf {} + 2>/dev/null; \
+    find /usr/local/lib/node_modules -type d -name "tests" -exec rm -rf {} + 2>/dev/null; \
+    find /usr/local/lib/node_modules -type d -name "__tests__" -exec rm -rf {} + 2>/dev/null; \
+    find /usr/local/lib/node_modules -type d -name "docs" -exec rm -rf {} + 2>/dev/null; \
+    true && \
+    apk update -qq --no-cache && \
+    apk upgrade --no-cache
+
+# USER ${APP_UID}
+
+WORKDIR /app
