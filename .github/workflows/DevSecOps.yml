@@ -1,0 +1,139 @@
+name: Quality Gate
+
+on:
+  workflow_call:
+    secrets:
+      HMPPS_RELEASE_PLEASE_CLIENT_ID:
+        required: true
+      HMPPS_RELEASE_PLEASE_KEY:
+        required: true
+permissions:
+  contents: read
+
+jobs:
+  dependency-review:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.actor != 'hmpps-release-please[bot]'
+    steps:
+      - name: 'Checkout Repository'
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: 'Dependency Review'
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+        with:
+          base-ref: main
+          head-ref: ${{ github.sha }}
+
+  megalinter:
+    if: github.actor != 'hmpps-release-please[bot]'
+
+    permissions:
+      # Needed to upload the results to code-scanning dashboard.
+      security-events: write
+      # Needed to publish results and get a badge (see publish_results below).
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: oxsecurity/megalinter@15e5b45552097e318c93de385779ce3b1084052c
+        env:
+          SARIF_REPORTER: true
+          ENABLE_LINTERS: >
+            ACTION_ACTIONLINT,
+            DOCKERFILE_HADOLINT,
+            YAML_YAMLLINT,
+            MARKDOWN_MARKDOWNLINT,
+            SPELL_CSPELL,
+            PYTHON_RUFF,
+            PYTHON_MYPY,
+            JAVASCRIPT_ESLINT,
+            REPOSITORY_BETTERLEAKS,
+          DISABLE_LINTERS: >
+            PYTHON_BLACK,
+            PYTHON_FLAKE8,
+            PYTHON_ISORT,
+            PYTHON_PYLINT
+
+      - name: Verify SARIF
+        id: sarif
+        run: |
+          if jq -e '.runs | length > 0' megalinter-reports/megalinter-report.sarif >/dev/null; then
+            echo "upload=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "upload=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Upload SARIF
+        if: steps.sarif.outputs.upload == 'true'
+        uses: github/codeql-action/upload-sarif@7d9249f5a57288b8a472ddd9cc3ece1921f7dc38
+        with:
+          sarif_file: megalinter-reports/megalinter-report.sarif
+  analysis:
+    name: Scorecard analysis
+    runs-on: ubuntu-latest
+    # `publish_results: true` only works when run from the default branch. conditional can be removed if disabled.
+    if: github.event.repository.default_branch == github.ref_name || github.event_name == 'pull_request' && github.actor != 'hmpps-release-please[bot]'
+    permissions:
+      # Needed to upload the results to code-scanning dashboard.
+      security-events: write
+      # Needed to publish results and get a badge (see publish_results below).
+      id-token: write
+    steps:
+      - name: "Checkout code"
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: "Run analysis"
+        uses: ossf/scorecard-action@f49aabe0b5af0936a0987cfb85d86b75731b0186 # v2.4.1
+        with:
+          results_file: results.sarif
+          results_format: sarif
+          # (Optional) "write" PAT token. Uncomment the `repo_token` line below if:
+          # - you want to enable the Branch-Protection check on a *public* repository, or
+          # - you are installing Scorecard on a *private* repository
+          # To create the PAT, follow the steps in https://github.com/ossf/scorecard-action?tab=readme-ov-file#authentication-with-fine-grained-pat-optional.
+          # repo_token: ${{ secrets.SCORECARD_TOKEN }}
+
+          # Public repositories:
+          #   - Publish results to OpenSSF REST API for easy access by consumers
+          #   - Allows the repository to include the Scorecard badge.
+          #   - See https://github.com/ossf/scorecard-action#publishing-results.
+          # For private repositories:
+          #   - `publish_results` will always be set to `false`, regardless
+          #     of the value entered here.
+          publish_results: true
+
+          # (Optional) Uncomment file_mode if you have a .gitattributes with files marked export-ignore
+          # file_mode: git
+
+      # Upload the results as artifacts (optional). Commenting out will disable uploads of run results in SARIF
+      # format to the repository Actions tab.
+      - name: "Upload artifact"
+        uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
+        with:
+          name: SARIF file
+          path: results.sarif
+          retention-days: 5
+
+      # Upload the results to GitHub's code scanning dashboard (optional).
+      # Commenting out will disable upload of results to your repo's Code Scanning dashboard
+      - name: "Upload to code-scanning"
+        uses: github/codeql-action/upload-sarif@7d9249f5a57288b8a472ddd9cc3ece1921f7dc38
+        with:
+          sarif_file: results.sarif
+
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate GitHub App token
+        id: app-token
+        continue-on-error: true
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1
+        with:
+          client-id: ${{ secrets.HMPPS_RELEASE_PLEASE_CLIENT_ID }}
+          private-key: ${{ secrets.HMPPS_RELEASE_PLEASE_KEY }}
+
+      - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7
+
+        with:
+          release-type: simple
+          token: ${{ steps.app-token.outputs.token }}
