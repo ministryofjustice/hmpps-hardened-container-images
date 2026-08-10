@@ -92,7 +92,7 @@ jobs:
             type=semver,pattern={{version}},prefix=${{ matrix.tag_prefix }}-
             
       - name: Log in to GitHub Container Registry
-        uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0 # v4.4.0
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -129,7 +129,7 @@ jobs:
 
       - name: Snyk scan
         id: snyk-scan
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/snyk-scan@v1.0.19
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/snyk-scan@v1.0.21
         with:
           subproject: ${{ matrix.dockerfile }}
           severity: high
@@ -141,7 +141,7 @@ jobs:
           image_ref: ${{ steps.snyk_image.outputs.image_ref }}
 
       - name: Snyk slack notification
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_snyk_scan_notification@v1.0.19
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_snyk_scan_notification@v1.0.21
         if: (failure() || steps.snyk-scan.outcome == 'failure' || fromJSON(steps.snyk-scan.outputs.results_count || '0') > 0) && (vars.SECURITY_ALERTS_SLACK_CHANNEL_ID || 'NO_SLACK') != 'NO_SLACK'
         with:
           title: 'Snyk'
