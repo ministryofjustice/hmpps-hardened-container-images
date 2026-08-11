@@ -103,7 +103,7 @@ jobs:
           flavor: |
             latest=false
           tags: |
-            type=raw,value=${{ env.TAG_PREFIX }}
+            type=raw,value=${{ matrix.image_name }}:${{ env.TAG_PREFIX }}
             type=semver,pattern={{version}},prefix=${{ env.TAG_PREFIX }}
 
       - name: Log in to GitHub Container Registry
@@ -138,7 +138,7 @@ jobs:
           if [[ "${{ github.ref }}" == "refs/heads/main" || "${{ github.event_name }}" == "schedule" ]]; then
             echo "image_ref=${{ env.REGISTRY }}/${{ github.repository_owner }}/hmpps-${{ matrix.image_name }}:${{ env.TAG_PREFIX }}" >> "$GITHUB_OUTPUT"
           else
-            echo "image_ref=snyk-scan:${{ matrix.image_name }}-${{ env.TAG_PREFIX }}" >> "$GITHUB_OUTPUT"
+            echo "image_ref=snyk-scan:${{ matrix.image_name }}:${{ env.TAG_PREFIX }}" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Snyk scan
