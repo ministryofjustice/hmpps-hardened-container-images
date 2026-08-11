@@ -96,7 +96,7 @@ jobs:
           flavor: |
             latest=false
           tags: |
-            type=raw,value=${{ matrix.tag_prefix }}-${{ GITHUB_RUN_ID }}
+            type=raw,value=${{ matrix.tag_prefix }}-${{ github.run_id }}
             type=semver,pattern={{version}},prefix=${{ matrix.tag_prefix }}
 
       - name: Log in to GitHub Container Registry
