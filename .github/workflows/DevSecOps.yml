@@ -2,7 +2,11 @@ name: Quality Gate
 
 on:
   workflow_call:
-
+    secrets:
+      HMPPS_RELEASE_PLEASE_CLIENT_ID:
+        required: true
+      HMPPS_RELEASE_PLEASE_KEY:
+        required: true
 permissions:
   contents: read
 
