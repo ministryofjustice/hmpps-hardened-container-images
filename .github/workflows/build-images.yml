@@ -32,7 +32,7 @@ jobs:
       id-token: write
       contents: read
   build-scan-push:
-    # needs: DevSecOps
+    needs: DevSecOps
     name: Build-Scan-Push
     runs-on: ubuntu-latest
     timeout-minutes: 20
