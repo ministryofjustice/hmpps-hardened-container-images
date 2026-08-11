@@ -1,6 +1,6 @@
 # HMPPS Java Base Image (Distroless Java 25)
 
-FROM debian:13 AS prep
+FROM debian@sha256:00a5cd538a5885efc648411ce55fc407cd467d8f008dc6e509c04b8cf4819f7f AS prep
 
 ARG APP_UID=2000
 ARG APP_GID=2000
@@ -13,7 +13,8 @@ ADD https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem /home/appu
 RUN chown appuser:appgroup /home/appuser/.postgresql/root.crt && \
     chmod 0644 /home/appuser/.postgresql/root.crt
 
-FROM gcr.io/distroless/java25-debian13:nonroot AS runtime
+    # gcr.io/distroless/java25-debian13:nonroot
+FROM gcr.io/distroless/java25-debian13@sha256:2ce7f9eb870273fcb76131cf1e3b0f3e4ef48ee86679166cae1d53fe035c47aa AS runtime
 
 ARG APP_UID=2000
 ARG APP_GID=2000
