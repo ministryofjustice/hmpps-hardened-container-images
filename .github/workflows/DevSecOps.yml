@@ -7,10 +7,7 @@ permissions:
   contents: read
 
 jobs:
-  megalinter:
-    permissions:
-      # Needed to upload the results to code-scanning dashboard.
-      security-events: write
+  dependency-review:
     runs-on: ubuntu-latest
     steps:
       - name: Harden the runner (Audit all outbound calls)
@@ -18,25 +15,50 @@ jobs:
         with:
           egress-policy: audit
 
+      - name: 'Checkout Repository'
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: 'Dependency Review'
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+  megalinter:
+    if: |
+      !startsWith(github.event.head_commit.message, 'chore(main): release')
+
+    permissions:
+      # Needed to upload the results to code-scanning dashboard.
+      security-events: write
+      # Needed to publish results and get a badge (see publish_results below).
+      id-token: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@b09bb98e06d4d774595224525879c09bc6e98c40 # v2.20.1
+        with:
+          egress-policy: audit
+<<<<<<< HEAD
+
+=======
+>>>>>>> dec28bf (feat: add new DevSecOps workflow)
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       - uses: oxsecurity/megalinter@15e5b45552097e318c93de385779ce3b1084052c
         env:
           SARIF_REPORTER: true
-
           ENABLE_LINTERS: >
             ACTION_ACTIONLINT,
             DOCKERFILE_HADOLINT,
             YAML_YAMLLINT,
             MARKDOWN_MARKDOWNLINT,
+            SPELL_CSPELL,
+            PYTHON_RUFF,
+            PYTHON_MYPY,
+            JAVASCRIPT_ESLINT,
             REPOSITORY_BETTERLEAKS,
             REPOSITORY_TRIVY
-
-          VALIDATE_ALL_CODEBASE: true
-
-          # Scan only PR commits instead of the whole history
-          REPOSITORY_BETTERLEAKS_PR_COMMITS_SCAN: true
+          DISABLE_LINTERS: >
+            PYTHON_BLACK,
+            PYTHON_FLAKE8,
+            PYTHON_ISORT,
+            PYTHON_PYLINT
       - uses: github/codeql-action/upload-sarif@7d9249f5a57288b8a472ddd9cc3ece1921f7dc38
-        if: always()
         with:
           sarif_file: megalinter-reports/megalinter-report.sarif
 
@@ -59,7 +81,6 @@ jobs:
         uses: step-security/harden-runner@b09bb98e06d4d774595224525879c09bc6e98c40 # v2.20.1
         with:
           egress-policy: audit
-
       - name: "Checkout code"
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -110,19 +131,15 @@ jobs:
       contents: write
       pull-requests: write
     steps:
-      # - name: Generate GitHub App token
-      #   id: app-token
-      #   continue-on-error: true
-      #   uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1
-      #   with:
-      #     client-id: ${{ secrets.HMPPS_SNYK_CLIENT_ID }}
-      #     private-key: ${{ secrets.HMPPS_SNYK_API_KEY }}
-      - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@b09bb98e06d4d774595224525879c09bc6e98c40 # v2.20.1
+      - name: Generate GitHub App token
+        id: app-token
+        continue-on-error: true
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1
         with:
-          egress-policy: audit
+          client-id: ${{ secrets.HMPPS_RELEASE_PLEASE_CLIENT_ID }}
+          private-key: ${{ secrets.HMPPS_RELEASE_PLEASE_KEY }}
 
       - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7
         with:
           release-type: simple
-          # token: $
+          token: ${{ steps.app-token.outputs.token }}
