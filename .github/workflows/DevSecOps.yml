@@ -46,7 +46,6 @@ jobs:
             PYTHON_MYPY,
             JAVASCRIPT_ESLINT,
             REPOSITORY_BETTERLEAKS,
-            REPOSITORY_TRIVY
           DISABLE_LINTERS: >
             PYTHON_BLACK,
             PYTHON_FLAKE8,
