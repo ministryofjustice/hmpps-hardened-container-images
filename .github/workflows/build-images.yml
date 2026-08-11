@@ -92,7 +92,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
         with:
-          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/hmpps-hard-${{ matrix.image_name }}
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/hmpps-${{ matrix.image_name }}
           flavor: |
             latest=false
           tags: |
@@ -129,9 +129,9 @@ jobs:
         run: |
           # Scan the pushed GHCR tag on main/schedule; otherwise scan the local PR image tag.
           if [[ "${{ github.ref }}" == "refs/heads/main" || "${{ github.event_name }}" == "schedule" ]]; then
-            echo "image_ref=${{ env.REGISTRY }}/${{ github.repository_owner }}/hmpps-hard-${{ matrix.image_name }}:${{ matrix.tag_prefix }}" >> "$GITHUB_OUTPUT"
+            echo "image_ref=${{ env.REGISTRY }}/${{ github.repository_owner }}/hmpps-${{ matrix.image_name }}:${{ matrix.tag_prefix }}" >> "$GITHUB_OUTPUT"
           else
-            echo "image_ref=snyk-scan:hard-${{ matrix.image_name }}-${{ matrix.tag_prefix }}" >> "$GITHUB_OUTPUT"
+            echo "image_ref=snyk-scan:${{ matrix.image_name }}-${{ matrix.tag_prefix }}" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Snyk scan
