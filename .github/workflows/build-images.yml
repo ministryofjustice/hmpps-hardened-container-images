@@ -132,11 +132,7 @@ jobs:
       - name: Resolve image reference for Snyk scan
         id: snyk_image
         run: |
-          if [[ "${{ github.ref }}" == "refs/heads/main" || "${{ github.event_name }}" == "schedule" ]]; then
-            echo "image_ref=${{ env.REGISTRY }}/${{ github.repository_owner }}/hmpps-${{ matrix.image_name }}:${{ env.IMAGE_TAG }}" >> "$GITHUB_OUTPUT"
-          else
-            echo "image_ref=snyk-scan:${{ matrix.image_name }}-${{ env.IMAGE_TAG }}" >> "$GITHUB_OUTPUT"
-          fi
+          echo "image_ref=${{ env.REGISTRY }}/${{ github.repository_owner }}/hmpps-${{ matrix.image_name }}:${{ env.IMAGE_TAG }}" >> "$GITHUB_OUTPUT"
 
       - name: Snyk scan
         id: snyk-scan
