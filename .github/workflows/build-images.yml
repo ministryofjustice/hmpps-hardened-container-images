@@ -25,6 +25,7 @@ jobs:
       HMPPS_RELEASE_PLEASE_KEY: ${{ secrets.HMPPS_RELEASE_PLEASE_KEY }}
     permissions:
       # Needed to upload the results to code-scanning dashboard.
+      contents: read
       security-events: write
       id-token: write
   build-scan-push:

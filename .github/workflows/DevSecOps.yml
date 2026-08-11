@@ -7,8 +7,6 @@ on:
         required: true
       HMPPS_RELEASE_PLEASE_KEY:
         required: true
-permissions:
-  contents: read
 
 jobs:
   dependency-review:
@@ -28,6 +26,7 @@ jobs:
 
     permissions:
       # Needed to upload the results to code-scanning dashboard.
+      contents: read
       security-events: write
       id-token: write
       # Needed to publish results and get a badge (see publish_results below).
