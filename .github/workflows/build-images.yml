@@ -31,7 +31,12 @@ jobs:
       id-token: write
       contents: read
   build-scan-push:
-    # needs: DevSecOps
+    if: >-
+      ${{
+        github.actor != 'hmpps-release-please[bot]' &&
+        !contains(github.event.head_commit.message, 'chore(main): release')
+      }}
+    needs: DevSecOps
     name: Build-Scan-Push
     runs-on: ubuntu-latest
     timeout-minutes: 20

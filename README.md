@@ -1,103 +1,232 @@
-[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/ossf/scorecard/badge)](https://scorecard.dev/viewer/?uri=github.com/ossf/scorecard)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/ossf/scorecard/badge)](https://scorecard.dev/viewer/?uri=github.comld Hardened Container Images](https://github.com/ministryofjustice/hmpps-hardened-container-images/actions/workflows/build-images.yml/badge.svg)](https://github.com/ministryofjustice/hmppsrkflows/build-images.yml)
 
+# HMPPS Hardened Container Images
 
-# HMPPS Base Container Images
+Lean, security-focused container images for Java, Node.js, and Python workloads used across HMPPS.
 
-Lean, security-focused base images for Java (Temurin and distroless), Node.js (Alpine and distroless), and Python applications used across HMPPS.
+These images are built and published to GitHub Container Registry (GHCR) and include automated operating system patching, multi-architecture support, vulnerability scanning, and supply chain security controls.
 
-## Repositories
+## Available Images
 
-| Image family | Repository | Example pull |
-|--------------|------------|--------------|
-| Java (Temurin JRE) | `ghcr.io/ministryofjustice/hmpps-eclipse-temurin` | `docker pull ghcr.io/ministryofjustice/hmpps-eclipse-temurin:21-jre-jammy` |
-| Java (Distroless) | `ghcr.io/ministryofjustice/hmpps-distroless-java` | `docker pull ghcr.io/ministryofjustice/hmpps-distroless-java:25-jre` |
-| Node.js (Alpine) | `ghcr.io/ministryofjustice/hmpps-node` | `docker pull ghcr.io/ministryofjustice/hmpps-node:24-alpine` |
-| Node.js (Distroless) | `ghcr.io/ministryofjustice/hmpps-distroless-node` | `docker pull ghcr.io/ministryofjustice/hmpps-distroless-node:24` |
-| Python | `ghcr.io/ministryofjustice/hmpps-python` | `docker pull ghcr.io/ministryofjustice/hmpps-python:python3.13-alpine` |
+| Repository | Variant |
+|------------|----------|
+| `ghcr.io/ministryofjustice/hmpps-hardened-eclipse-temurin-java21` | Eclipse Temurin Java 21 |
+| `ghcr.io/ministryofjustice/hmpps-hardened-eclipse-temurin-java25` | Eclipse Temurin Java 25 |
+| `ghcr.io/ministryofjustice/hmpps-hardened-distroless-java21` | Distroless Java 21 |
+| `ghcr.io/ministryofjustice/hmpps-hardened-distroless-java25` | Distroless Java 25 |
+| `ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-24` | Alpine Node.js 24 |
+| `ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-24-runtime` | Alpine Node.js 24 Runtime (npm, yarn, and corepack removed) |
+| `ghcr.io/ministryofjustice/hmpps-hardened-distroless-node` | Distroless Node.js 24 |
+| `ghcr.io/ministryofjustice/hmpps-hardened-python-alpine` | Python Alpine |
+
+All images are published for:
+
+- `linux/amd64`
+- `linux/arm64`
+
+## Usage Examples
+
+### Java 25 (Temurin)
+
+```dockerfile
+FROM ghcr.io/ministryofjustice/hmpps-hardened-eclipse-temurin-java25:v1.2.3
+```
+
+### Java 25 (Distroless)
+
+```dockerfile
+FROM ghcr.io/ministryofjustice/hmpps-hardened-distroless-java25:v1.2.3
+```
+
+### Node.js Runtime
+
+```dockerfile
+FROM ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-24-runtime:v1.2.3
+```
+
+### Python
+
+```dockerfile
+FROM ghcr.io/ministryofjustice/hmpps-hardened-python-alpine:v1.2.3
+```
 
 ## Variants
 
-Java:
-- `21-jre-jammy`
-- `25-jre-jammy`
-- `21-jre` (distroless)
-- `25-jre` (distroless)
+### Java
 
-Node:
-- `24-alpine` `npm 11.x`
-- `24-alpine-npm12` `npm 12.x`
-- `24-alpine-runtime` — same as `24-alpine` but with package managers (npm, yarn, corepack) removed
-- `24` (distroless)
+#### Eclipse Temurin
 
-Python:
-- `python3.13-alpine`
+- Java 21
+- Java 25
 
-All images are built multi-arch: `linux/amd64` and `linux/arm64`.
+#### Distroless
+
+- Java 21
+- Java 25
+
+### Node.js
+
+#### Alpine
+
+- Node.js 24
+
+#### Alpine Runtime
+
+- Node.js 24 runtime image with npm, yarn, and corepack removed
+
+#### Distroless
+
+- Node.js 24
+
+### Python
+
+- Python Alpine
 
 ## Tagging Scheme
 
-Each variant always has its raw variant tag (e.g. `21-jre-jammy`). Additional dynamic tags are **prefixed by the variant** to avoid collisions:
+Images are tagged using the Git reference name that triggered the build.
 
-| Tag Type | Example | When Present |
-|----------|---------|--------------|
-| Schedule date | `21-jre-jammy-20251120` | Only on weekday 05:00 UTC scheduled build |
-| Branch | `21-jre-jammy-initial-commit` | On branch builds (non-schedule) |
-| PR | `21-jre-jammy-pr-123` | On pull request builds (if enabled) |
-| Git SHA | `21-jre-jammy-sha-<shortsha>` | All builds |
-| Raw variant | `21-jre-jammy` | All builds |
+Examples:
 
-The `:latest` tag is selectively enabled per matrix entry in CI. Consumers should prefer explicit variant tags.
+| Git Reference | Published Tag |
+|--------------|---------------|
+| `main` | `main` |
+| `feature/docker-updates` | `feature/docker-updates` |
+| `release-2026-01` | `release-2026-01` |
+| `v1.2.3` | `v1.2.3` |
+
+For example, creating the Git tag `v1.2.3` publishes:
+
+```text
+ghcr.io/ministryofjustice/hmpps-hardened-eclipse-temurin-java25:v1.2.3
+ghcr.io/ministryofjustice/hmpps-hardened-distroless-java25:v1.2.3
+ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-24-runtime:v1.2.3
+ghcr.io/ministryofjustice/hmpps-hardened-python-alpine:v1.2.3
+```
+
+Branch-based tags are intended for development and testing only.
+
+Production workloads should use release tags.
+
+## Docker Image Pinning
+
+Consumers should always pin to a specific release tag.
+
+Recommended:
+
+```dockerfile
+FROM ghcr.io/ministryofjustice/hmpps-hardened-eclipse-temurin-java25:v1.2.3
+```
+
+Avoid floating tags such as:
+
+```dockerfile
+FROM ghcr.io/ministryofjustice/hmpps-hardened-eclipse-temurin-java25:main
+```
+
+or:
+
+```dockerfile
+FROM ghcr.io/ministryofjustice/hmpps-hardened-eclipse-temurin-java25:latest
+```
+
+For maximum supply chain integrity, pin images by digest:
+
+```dockerfile
+FROM ghcr.io/ministryofjustice/hmpps-hardened-eclipse-temurin-java25:v1.2.3@sha256:<digest>
+```
+
+Digest-pinned images are immutable and guarantee that the exact image tested is the image deployed.
 
 ## CI/CD Overview
 
-- Weekday scheduled build: 05:00 UTC (creates date tags)
-- Push to `main`, PR, and manual dispatch builds are enabled
-- Multi-platform build/push via Buildx
-- Slack notification on workflow failure
+Images are automatically built when:
 
-## Upgrading Base Versions (Workflow-Only)
+- Changes are pushed to `main`
+- A Git tag is created
+- A pull request is opened or updated
+- The workflow is manually triggered
 
-To upgrade image versions, update the matrix in `.github/workflows/build-images.yml` instead of editing Dockerfiles.
+The build pipeline includes:
+
+- Multi-platform Docker Buildx builds
+- GitHub Container Registry (GHCR) publishing
+- Snyk container scanning
+- GitHub code scanning integration
+- Dependency and vulnerability analysis
+- Automatic cancellation of superseded workflow runs
+
+## Upgrading Base Versions
+
+Container image definitions are managed through the workflow matrix and associated Dockerfiles.
 
 The workflow matrix controls:
-- `image_name`: output repository suffix (for example `eclipse-temurin`, `distroless-node`, `python`)
-- `context`: Docker build context directory
-- `dockerfile`: Dockerfile path
-- `tag_prefix`: raw variant tag and prefix for dynamic tags
-- `publish_latest`: whether to publish `latest` for that matrix entry
 
-Example matrix entry:
+- `image_name` - published image name
+- `context` - Docker build context
+- `dockerfile` - Dockerfile path
+- `publish_latest` - whether the image receives a `latest` tag
+
+Example:
 
 ```yaml
-- image_name: eclipse-temurin
+- image_name: hardened-eclipse-temurin-java25
   context: images/java/eclipse-temurin
   dockerfile: images/java/eclipse-temurin/Dockerfile.java25
-  tag_prefix: 25-jre-jammy
   publish_latest: true
 ```
 
-How updates work:
-- Existing tag refresh: keep the same `tag_prefix`; scheduled rebuilds (`cron`) run with `pull: true`, so the latest upstream base layers are pulled automatically.
-- New tag adoption: update `dockerfile` (and/or its `FROM` image tag), then keep or change `tag_prefix` to the published tag you want.
-- New variant publish: add a new matrix row with `image_name`, `context`, `dockerfile`, `tag_prefix`, and `publish_latest`.
+When upgrading an image:
 
-When moving to a new tag, verify:
-- The upstream tag in the Dockerfile `FROM` exists and is supported for your target architecture (`linux/amd64`, `linux/arm64`).
-- The selected `context`/`dockerfile` paths match repository layout.
-- Consumers pin to the explicit variant tag (for example `25-jre-jammy`) rather than relying on `latest`.
+1. Update the Dockerfile base image reference.
+2. Verify upstream image availability for both supported architectures.
+3. Create and test a pull request.
+4. Create a release tag.
+5. Update consuming applications to use the new image version.
 
-## Security Upgrades
+Consumers should always reference explicit release versions rather than floating branch tags.
 
-All Dockerfiles use a multi-stage build pattern to ensure OS security patches are always applied fresh:
+## Security Updates
+
+Where applicable, images apply operating system updates during the build process using a dedicated build stage.
+
+Example Alpine pattern:
 
 ```dockerfile
 FROM base-image AS base
-# ... setup steps ...
 
 FROM base AS security-upgrades
-RUN apk upgrade --no-cache  # or apt-get upgrade for Ubuntu
+
+RUN apk upgrade --no-cache
 ```
 
-The CI workflow uses BuildKit's `--no-cache-filter=security-upgrades` to skip the cache for this stage, ensuring `apk upgrade` / `apt-get upgrade` always fetches the latest patches — even when other layers are cached.
+Example Ubuntu pattern:
 
-Distroless images use prep/runtime stages and do not include a `security-upgrades` stage.
+```dockerfile
+FROM base-image AS base
+
+FROM base AS security-upgrades
+
+RUN apt-get update \
+ && apt-get upgrade -y \
+ && rm -rf /var/lib/apt/lists/*
+```
+
+The CI pipeline uses BuildKit cache filtering to ensure security update layers are always rebuilt:
+
+```text
+--no-cache-filter=security-upgrades
+```
+
+This guarantees that the latest operating system patches are applied even when other layers are served from cache.
+
+Distroless images follow a different build pattern and do not include a dedicated `security-upgrades` stage.
+
+## Security Scanning
+
+All published images are scanned during CI using Snyk.
+
+Scanning includes:
+
+- Operating system vulnerabilities
+- Package
