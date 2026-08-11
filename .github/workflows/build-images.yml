@@ -19,7 +19,9 @@ concurrency:
 jobs:
   DevSecOps: 
     uses: ./.github/workflows/DevSecOps.yml
-    secrets: inherit  
+    secrets: 
+      HMPPS_RELEASE_PLEASE_CLIENT_ID: ${{ secrets.HMPPS_RELEASE_PLEASE_CLIENT_ID }}
+      HMPPS_RELEASE_PLEASE_KEY: ${{ secrets.HMPPS_RELEASE_PLEASE_KEY }}
   build-scan-push:
     needs: DevSecOps
     name: Build-Scan-Push
