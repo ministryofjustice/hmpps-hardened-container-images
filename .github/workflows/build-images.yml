@@ -14,7 +14,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-
+  IMAGE_TAG: ${{ github.head_ref || github.ref_name }}
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -37,7 +37,6 @@ jobs:
     timeout-minutes: 20
     env:
       SNYK_TOKEN: ${{ secrets.HMPPS_SNYK_API_KEY }}
-      TAG_PREFIX: ${{ github.ref_type == 'tag' && github.ref_name || github.head_ref || github.ref_name }}
     strategy:
       fail-fast: false
       matrix:
