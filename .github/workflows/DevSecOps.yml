@@ -25,8 +25,11 @@ jobs:
           head-ref: ${{ github.sha }}
 
   megalinter:
-    if: github.actor != 'hmpps-release-please[bot]'
-
+    if: >-
+      ${{
+        github.actor != 'hmpps-release-please[bot]' &&
+        !contains(github.event.head_commit.message, 'chore(main): release')
+      }}
     permissions:
       # Needed to upload the results to code-scanning dashboard.
       contents: read

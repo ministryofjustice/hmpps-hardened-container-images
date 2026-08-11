@@ -37,49 +37,49 @@ jobs:
     timeout-minutes: 20
     env:
       SNYK_TOKEN: ${{ secrets.HMPPS_SNYK_API_KEY }}
+      TAG_PREFIX: ${{ github.ref_type == 'tag' && github.ref_name || github.head_ref || github.ref_name }}
     strategy:
       fail-fast: false
       matrix:
         include:
-          - image_name: hardened-eclipse-temurin
+          - image_name: hardened-eclipse-temurin-java21
             context: images/java/eclipse-temurin
             dockerfile: images/java/eclipse-temurin/Dockerfile.java21
-            tag_prefix: 21-jre-jammy
+            tag_prefix: ''
             publish_latest: false
-          - image_name: hardened-eclipse-temurin
+          - image_name: hardened-eclipse-temurin-java25
             context: images/java/eclipse-temurin
             dockerfile: images/java/eclipse-temurin/Dockerfile.java25
-            tag_prefix: 25-jre-jammy
+            tag_prefix: ''
             publish_latest: true
-          - image_name: hardened-distroless-java
+          - image_name: hardened-distroless-java21
             context: images/java/distroless
             dockerfile: images/java/distroless/Dockerfile.java21
-            tag_prefix: 21-jre
+            tag_prefix: ''
             publish_latest: false
-          - image_name: hardened-distroless-java
+          - image_name: hardened-distroless-java25
             context: images/java/distroless
             dockerfile: images/java/distroless/Dockerfile.java25
-            tag_prefix: 25-jre
+            tag_prefix: ''
             publish_latest: true
-          - image_name: hardened-node
+          - image_name: hardened-alpine-node-24
             context: images/node/alpine
             dockerfile: images/node/alpine/Dockerfile.node24-npm11
-            tag_prefix: 24-alpine
+            tag_prefix: ''
             publish_latest: false
-          - image_name: hardened-node
+          - image_name: hardened-alpine-node-24-runtime
             context: images/node/alpine-runtime
             dockerfile: images/node/alpine-runtime/Dockerfile
-            tag_prefix: 24-alpine-runtime
+            tag_prefix: ''
             publish_latest: true
           - image_name: hardened-distroless-node
             context: images/node/distroless
             dockerfile: images/node/distroless/Dockerfile
-            tag_prefix: 24
             publish_latest: true
-          - image_name: hardened-python
+          - image_name: hardened-python-alpine
             context: images/python/alpine
             dockerfile: images/python/alpine/Dockerfile
-            tag_prefix: python3.13-alpine
+            tag_prefix: ''
             publish_latest: true
     permissions:
       packages: write
@@ -103,8 +103,8 @@ jobs:
           flavor: |
             latest=false
           tags: |
-            type=raw,value=${{ matrix.tag_prefix }}-${{ github.run_id }}
-            type=semver,pattern={{version}},prefix=${{ matrix.tag_prefix }}
+            type=raw,value=${{ env.TAG_PREFIX }}
+            type=semver,pattern={{version}},prefix=${{ env.TAG_PREFIX }}
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0 # v4.4.0
@@ -126,7 +126,7 @@ jobs:
           load: ${{ !(github.ref == 'refs/heads/main' || github.event_name == 'schedule') }}
           # main/scheduled builds use metadata-action tags and push to GHCR.
           # PR builds use a local-only snyk-scan:* tag (not pushed) for container scanning.
-          tags: ${{ (github.ref == 'refs/heads/main' || github.event_name == 'schedule') && steps.meta.outputs.tags || format('snyk-scan:{0}-{1}', matrix.image_name, matrix.tag_prefix) }}
+          tags: ${{ env.TAG_PREFIX }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -136,9 +136,9 @@ jobs:
         id: snyk_image
         run: |
           if [[ "${{ github.ref }}" == "refs/heads/main" || "${{ github.event_name }}" == "schedule" ]]; then
-            echo "image_ref=${{ env.REGISTRY }}/${{ github.repository_owner }}/hmpps-${{ matrix.image_name }}:${{ matrix.tag_prefix }}-${{ github.run_id }}" >> "$GITHUB_OUTPUT"
+            echo "image_ref=${{ env.REGISTRY }}/${{ github.repository_owner }}/hmpps-${{ matrix.image_name }}:${{ env.TAG_PREFIX }}" >> "$GITHUB_OUTPUT"
           else
-            echo "image_ref=snyk-scan:${{ matrix.image_name }}-${{ matrix.tag_prefix }}" >> "$GITHUB_OUTPUT"
+            echo "image_ref=snyk-scan:${{ matrix.image_name }}-${{ env.TAG_PREFIX }}" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Snyk scan
