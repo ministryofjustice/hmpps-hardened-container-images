@@ -102,8 +102,8 @@ jobs:
           flavor: |
             latest=false
           tags: |
-            type=raw,value=${{ matrix.image_name }}:${{ env.TAG_PREFIX }}
-            type=semver,pattern={{version}},prefix=${{ env.TAG_PREFIX }}
+            type=raw,value=${{ matrix.image_name }}:${{ env.IMAGE_TAG }}
+            type=semver,pattern={{version}},prefix=${{ env.IMAGE_TAG }}
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0 # v4.4.0
@@ -125,7 +125,7 @@ jobs:
           load: ${{ !(github.ref == 'refs/heads/main' || github.event_name == 'schedule') }}
           # main/scheduled builds use metadata-action tags and push to GHCR.
           # PR builds use a local-only snyk-scan:* tag (not pushed) for container scanning.
-          tags: ${{ env.TAG_PREFIX }}
+          tags:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -135,9 +135,9 @@ jobs:
         id: snyk_image
         run: |
           if [[ "${{ github.ref }}" == "refs/heads/main" || "${{ github.event_name }}" == "schedule" ]]; then
-            echo "image_ref=${{ env.REGISTRY }}/${{ github.repository_owner }}/hmpps-${{ matrix.image_name }}:${{ env.TAG_PREFIX }}" >> "$GITHUB_OUTPUT"
+            echo "image_ref=${{ env.REGISTRY }}/${{ github.repository_owner }}/hmpps-${{ matrix.image_name }}:${{ env.IMAGE_TAG }}" >> "$GITHUB_OUTPUT"
           else
-            echo "image_ref=snyk-scan:${{ matrix.image_name }}:${{ env.TAG_PREFIX }}" >> "$GITHUB_OUTPUT"
+            echo "image_ref=snyk-scan:${{ matrix.image_name }}:${{ env.IMAGE_TAG }}" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Snyk scan
