@@ -30,6 +30,7 @@ jobs:
       # Needed to upload the results to code-scanning dashboard.
       security-events: write
       id-token: write
+      contents: read
   build-scan-push:
     needs: DevSecOps
     name: Build-Scan-Push
