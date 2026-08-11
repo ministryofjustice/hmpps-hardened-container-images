@@ -1,5 +1,5 @@
 # HMPPS Python Base Image
-FROM ghcr.io/astral-sh/uv:python3.13-alpine AS base
+FROM ghcr.io/astral-sh/uv:python3.13-alpine@sha256:e9a8312ed6a98f515208dd792c61178a0b7c8fbfb807af01534f0e6fe10b24f5 AS base
 
 # Metadata
 LABEL org.opencontainers.image.title="HMPPS Python Base Image"

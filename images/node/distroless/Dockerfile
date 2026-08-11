@@ -1,5 +1,5 @@
 # HMPPS Node.js Runtime Base Image (Distroless)
-FROM node:24-bookworm-slim AS prep
+FROM node:24-bookworm-slim@sha256:3638d9a6fe4030bd716be989438248074489337ba3275657f93595428be4fc03 AS prep
 
 ARG APP_UID=2000
 ARG APP_GID=2000
@@ -11,7 +11,7 @@ ADD https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem /home/appu
 RUN chown appuser:appgroup /home/appuser/.postgresql/root.crt && \
     chmod 0644 /home/appuser/.postgresql/root.crt
 
-FROM gcr.io/distroless/nodejs22-debian13:nonroot AS runtime
+FROM gcr.io/distroless/nodejs22-debian13:nonroot@sha256:939d6f1671529d230f50b563578e9b5d206af58f038b10ebd7e1233023d4e167 AS runtime
 
 ARG APP_UID=2000
 ARG APP_GID=2000
