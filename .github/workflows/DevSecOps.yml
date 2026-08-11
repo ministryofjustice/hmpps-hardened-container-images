@@ -137,6 +137,7 @@ jobs:
           private-key: ${{ secrets.HMPPS_RELEASE_PLEASE_KEY }}
 
       - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7
+
         with:
           release-type: simple
           token: ${{ steps.app-token.outputs.token }}

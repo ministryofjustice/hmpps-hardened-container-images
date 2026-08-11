@@ -19,6 +19,7 @@ concurrency:
 jobs:
   DevSecOps: 
     uses: ./.github/workflows/DevSecOps.yml
+    secrets: inherit  
   build-scan-push:
     needs: DevSecOps
     name: Build-Scan-Push
