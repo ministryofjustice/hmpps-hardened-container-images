@@ -1,4 +1,7 @@
 name: Build Hardened Container Images
+permissions:
+  # Needed to upload the results to code-scanning dashboard.
+  contents: read
 
 on:
   push:
@@ -25,7 +28,6 @@ jobs:
       HMPPS_RELEASE_PLEASE_KEY: ${{ secrets.HMPPS_RELEASE_PLEASE_KEY }}
     permissions:
       # Needed to upload the results to code-scanning dashboard.
-      contents: read
       security-events: write
       id-token: write
   build-scan-push:
@@ -80,7 +82,6 @@ jobs:
             tag_prefix: python3.13-alpine
             publish_latest: true
     permissions:
-      contents: read
       packages: write
       security-events: write
 
