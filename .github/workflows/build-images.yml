@@ -140,7 +140,7 @@ jobs:
           if [[ "${{ github.ref }}" == "refs/heads/main" || "${{ github.event_name }}" == "schedule" ]]; then
             echo "image_ref=${{ env.REGISTRY }}/${{ github.repository_owner }}/hmpps-${{ matrix.image_name }}:${{ matrix.tag_prefix }}-${{ github.run_id }}" >> "$GITHUB_OUTPUT"
           else
-            echo "image_ref=snyk-scan:${{ matrix.image_name }}-${{ matrix.tag_prefix }}-${{ github.run_id }}" >> "$GITHUB_OUTPUT"
+            echo "image_ref=${{ env.REGISTRY }}/${{ github.repository_owner }}/hmpps-${{ matrix.image_name }}:${{ matrix.tag_prefix }}-${{ github.run_id }}" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Snyk scan
