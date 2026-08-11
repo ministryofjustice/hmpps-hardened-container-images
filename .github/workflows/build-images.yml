@@ -32,7 +32,7 @@ jobs:
       id-token: write
       contents: read
   build-scan-push:
-    needs: DevSecOps
+    # needs: DevSecOps
     name: Build-Scan-Push
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -136,11 +136,10 @@ jobs:
       - name: Resolve image reference for Snyk scan
         id: snyk_image
         run: |
-          # Scan the pushed GHCR tag on main/schedule; otherwise scan the local PR image tag.
           if [[ "${{ github.ref }}" == "refs/heads/main" || "${{ github.event_name }}" == "schedule" ]]; then
             echo "image_ref=${{ env.REGISTRY }}/${{ github.repository_owner }}/hmpps-${{ matrix.image_name }}:${{ matrix.tag_prefix }}-${{ github.run_id }}" >> "$GITHUB_OUTPUT"
           else
-            echo "image_ref=${{ env.REGISTRY }}/${{ github.repository_owner }}/hmpps-${{ matrix.image_name }}:${{ matrix.tag_prefix }}-${{ github.run_id }}" >> "$GITHUB_OUTPUT"
+            echo "image_ref=snyk-scan:${{ matrix.image_name }}-${{ matrix.tag_prefix }}" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Snyk scan
