@@ -62,7 +62,7 @@ jobs:
             PYTHON_FLAKE8,
             PYTHON_ISORT,
             PYTHON_PYLINT
-                  
+
       - name: Verify SARIF
         id: sarif
         run: |
@@ -142,10 +142,6 @@ jobs:
 
   release-please:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
-      
     steps:
       - name: Generate GitHub App token
         id: app-token

@@ -1,0 +1,20 @@
+{
+  "version": "0.2",
+  "language": "en-GB",
+  "words": [
+    "MegaLinter",
+    "BetterLeaks",
+    "Snyk",
+    "Hadolint",
+    "Temurin",
+    "Distroless",
+    "GHCR",
+    "HMPPS",
+    "GitHub",
+    "CodeQL",
+    "SARIF",
+    "Buildx",
+    "Mypy",
+    "Ruff"
+  ]
+}
