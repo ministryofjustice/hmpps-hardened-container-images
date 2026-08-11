@@ -1,4 +1,7 @@
-name: Quality Gate
+name: DevSecOps Quality Gate & Release Manager
+
+permissions:
+  contents: read
 
 on:
   workflow_call:

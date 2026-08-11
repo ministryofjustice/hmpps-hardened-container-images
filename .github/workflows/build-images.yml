@@ -1,6 +1,5 @@
 name: Build Hardened Container Images
 permissions:
-  # Needed to upload the results to code-scanning dashboard.
   contents: read
 
 on:
