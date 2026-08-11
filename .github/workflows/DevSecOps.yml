@@ -13,6 +13,11 @@ jobs:
       security-events: write
     runs-on: ubuntu-latest
     steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@b09bb98e06d4d774595224525879c09bc6e98c40 # v2.20.1
+        with:
+          egress-policy: audit
+
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       - uses: oxsecurity/megalinter@15e5b45552097e318c93de385779ce3b1084052c
         env:
@@ -50,6 +55,11 @@ jobs:
       # actions: read
 
     steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@b09bb98e06d4d774595224525879c09bc6e98c40 # v2.20.1
+        with:
+          egress-policy: audit
+
       - name: "Checkout code"
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -107,6 +117,11 @@ jobs:
       #   with:
       #     client-id: ${{ secrets.HMPPS_SNYK_CLIENT_ID }}
       #     private-key: ${{ secrets.HMPPS_SNYK_API_KEY }}
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@b09bb98e06d4d774595224525879c09bc6e98c40 # v2.20.1
+        with:
+          egress-policy: audit
+
       - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7
         with:
           release-type: simple
