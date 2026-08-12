@@ -1,0 +1,34 @@
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"  # Location of workflow files
+    schedule:
+      interval: "daily"
+    cooldown:
+      default-days: 7
+    ignore:
+      - dependency-name: "ministryofjustice/hmpps-github-actions/*"
+        update-types:
+          - "version-update:semver-minor"
+          - "version-update:semver-patch"
+      - dependency-name: "ministryofjustice/hmpps-github-shared-actions/*"
+        update-types:
+          - "version-update:semver-minor"
+          - "version-update:semver-patch"
+    groups:
+      github-actions-dependencies:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "docker"
+    directories:
+      - "/images/java/distroless"
+      - "/images/java/eclipse-temurin"
+      - "/images/node/alpine"
+      - "/images/node/alpine-runtime"
+      - "/images/node/distroless"
+      - "/images/python/alpine"
+    schedule:
+      interval: "daily"
+    cooldown:
+      default-days: 7

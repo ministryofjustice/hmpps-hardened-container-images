@@ -1,0 +1,169 @@
+name: Build Hardened Container Images
+permissions:
+  contents: read
+
+on:
+  push:
+    tags:
+      - '*'
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_TAG: ${{ github.head_ref || github.ref_name }}
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  DevSecOps:
+    uses: ./.github/workflows/DevSecOps.yml
+    secrets:
+      HMPPS_RELEASE_PLEASE_CLIENT_ID: ${{ secrets.HMPPS_RELEASE_PLEASE_CLIENT_ID }}
+      HMPPS_RELEASE_PLEASE_KEY: ${{ secrets.HMPPS_RELEASE_PLEASE_KEY }}
+    permissions:
+      # Needed to upload the results to code-scanning dashboard.
+      security-events: write
+      id-token: write
+      contents: read
+  build-scan-push:
+    if: >-
+      ${{
+        github.ref_type == 'tag' ||
+        (
+          github.actor != 'hmpps-release-please[bot]' &&
+          !contains(github.event.head_commit.message || '', 'chore(main): release')
+        )
+      }}
+    needs: DevSecOps
+    name: Build-Scan-Push
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SNYK_TOKEN: ${{ secrets.HMPPS_SNYK_API_KEY }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image_name: hardened-eclipse-temurin-java21
+            context: images/java/eclipse-temurin
+            dockerfile: images/java/eclipse-temurin/Dockerfile.java21
+            tag_prefix: ''
+            publish_latest: false
+          - image_name: hardened-eclipse-temurin-java25
+            context: images/java/eclipse-temurin
+            dockerfile: images/java/eclipse-temurin/Dockerfile.java25
+            tag_prefix: ''
+            publish_latest: true
+          - image_name: hardened-distroless-java21
+            context: images/java/distroless
+            dockerfile: images/java/distroless/Dockerfile.java21
+            tag_prefix: ''
+            publish_latest: false
+          - image_name: hardened-distroless-java25
+            context: images/java/distroless
+            dockerfile: images/java/distroless/Dockerfile.java25
+            tag_prefix: ''
+            publish_latest: true
+          - image_name: hardened-alpine-node-24
+            context: images/node/alpine
+            dockerfile: images/node/alpine/Dockerfile.node24-npm11
+            tag_prefix: ''
+            publish_latest: false
+          - image_name: hardened-alpine-node-runtime-24
+            context: images/node/alpine-runtime
+            dockerfile: images/node/alpine-runtime/Dockerfile
+            tag_prefix: ''
+            publish_latest: true
+          - image_name: hardened-distroless-node-24
+            context: images/node/distroless
+            dockerfile: images/node/distroless/Dockerfile
+            publish_latest: true
+          - image_name: hardened-python-alpine-3-13
+            context: images/python/alpine
+            dockerfile: images/python/alpine/Dockerfile
+            tag_prefix: ''
+            publish_latest: true
+    permissions:
+      packages: write
+      security-events: write
+
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@96fe6ef7f33517b61c61be40b68a1882f3264fb8 # v4.2.0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4.2.0
+
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/hmpps-${{ matrix.image_name }}
+          tags: |
+            type=raw,value=${{ env.IMAGE_TAG }}
+            # type=raw,value=${{ matrix.image_name }}-${{ env.IMAGE_TAG }}
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0 # v4.4.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push container image
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
+        with:
+          context: ./${{ matrix.context }}
+          file: ./${{ matrix.dockerfile }}
+          # main/scheduled builds publish multi-arch images; PR builds stay amd64-only
+          # so the image can be loaded locally on the amd64 GitHub runner for Snyk scanning.
+          platforms: ${{ (github.ref == 'refs/heads/main' || github.ref_type == 'tag'|| github.event_name == 'schedule') && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
+          pull: true
+          push: ${{ github.ref == 'refs/heads/main' || github.ref_type == 'tag' || github.event_name == 'schedule' }}
+          load: ${{ github.ref == 'refs/heads/main' || github.ref_type == 'tag' || github.event_name == 'schedule' }}
+          # main/scheduled builds use metadata-action tags and push to GHCR.
+          # PR builds use a local-only snyk-scan:* tag (not pushed) for container scanning.
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          no-cache-filters: security-upgrades
+
+      - name: Resolve image reference for Snyk scan
+        id: snyk_image
+        run: |
+          echo "image_ref=${{ env.REGISTRY }}/${{ github.repository_owner }}/hmpps-${{ matrix.image_name }}:${{ env.IMAGE_TAG }}" >> "$GITHUB_OUTPUT"
+
+      - name: Snyk scan
+        id: snyk-scan
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/snyk-scan@35bb5e74a025299cddf50909c1968444d966c1dc
+        with:
+          subproject: ${{ matrix.dockerfile }}
+          severity: high
+          scan_type: image
+          location: '.'
+          snyk_policy_path: ''
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          snyk_token: ${{ secrets.HMPPS_SNYK_API_KEY }}
+          image_ref: ${{ steps.snyk_image.outputs.image_ref }}
+
+      # - name: Snyk slack notification
+      #   uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_snyk_scan_notification@35bb5e74a025299cddf50909c1968444d966c1dc
+      #   if: (failure() || steps.snyk-scan.outcome == 'failure' || fromJSON(steps.snyk-scan.outputs.results_count || '0') > 0) && (vars.SECURITY_ALERTS_SLACK_CHANNEL_ID || 'NO_SLACK') != 'NO_SLACK'
+      #   with:
+      #     title: 'Snyk'
+      #     warningOnly: ${{ steps.snyk-scan.outputs.sarif_upload_outcome == 'success' }}
+      #     channel_id: ${{ vars.SECURITY_ALERTS_SLACK_CHANNEL_ID || 'NO_SLACK' }}
+      #     SLACK_BOT_TOKEN: ${{ secrets.HMPPS_SRE_SLACK_BOT_TOKEN }}
+      #     subproject: ''
+      #     scan_context: image-${{ github.ref_name }}
+      #     image_ref: ${{ steps.snyk_image.outputs.image_ref }}
+      #     summary: ${{ steps.snyk-scan.outputs.summary }}
