@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/ministryofjustice/hmpps-hardened-container-images/compare/v1.0.0...v1.0.1) (2026-08-12)
+
+
+### Bug Fixes
+
+* update readme docs ([69c4e77](https://github.com/ministryofjustice/hmpps-hardened-container-images/commit/69c4e778bdeb440d5b171116d87e78fb14c89e4a))
+
 ## 1.0.0 (2026-08-12)
 
 
