@@ -1,211 +1,193 @@
-[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/ossf/scorecard/badge)](https://scorecard.dev/viewer/?uri=github.comld)
-[![Hardened Container Images](https://github.com/ministryofjustice/hmpps-hardened-container-images/actions/workflows/build-images.yml/badge.svg)](https://github.com/ministryofjustice/hmppsrkflows/build-images.yml)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/ministryofjustice/hmpps-hardened-container-images/badge)](https://scorecard.dev/viewer/?uri=github.com/ministryofjustice/hmpps-hardened-container-images)
+[![Build Hardened Container Images](https://github.com/ministryofjustice/hmpps-hardened-container-images/actions/workflows/build-images.yml/badge.svg)](https://github.com/ministryofjustice/hmpps-hardened-container-images/actions/workflows/build-images.yml)
+![GitHub Release](https://img.shields.io/github/v/release/ministryofjustice%2Fhmpps-hardened-container-images)
 
-# HMPPS Hardened Container Images
+Security-hardened, production-ready container images for HMPPS services.
 
-Lean, security-focused container images for Java, Node.js, and Python workloads used across HMPPS.
+These images are automatically built, scanned, and published to GitHub Container Registry (GHCR) with support for:
 
-These images are built and published to GitHub Container Registry (GHCR) and include automated operating system patching, multi-architecture support, vulnerability scanning, and supply chain security controls.
+- 🔒 Secure base images
+- 🛡️ Snyk vulnerability scanning
+- 📦 GitHub Container Registry publishing
+- 🌍 Multi-architecture builds (`amd64` and `arm64`)
+- 🔄 Automated operating system updates
+- 🚀 Release-based versioning
+- ✅ Supply chain security controls
+- 🔍 GitHub code scanning integration
+
+---
 
 ## Available Images
-
-| Repository | Variant |
-|------------|----------|
-| `ghcr.io/ministryofjustice/hmpps-hardened-eclipse-temurin-java21` | Eclipse Temurin Java 21 |
-| `ghcr.io/ministryofjustice/hmpps-hardened-eclipse-temurin-java25` | Eclipse Temurin Java 25 |
-| `ghcr.io/ministryofjustice/hmpps-hardened-distroless-java21` | Distroless Java 21 |
-| `ghcr.io/ministryofjustice/hmpps-hardened-distroless-java25` | Distroless Java 25 |
-| `ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-24` | Alpine Node.js 24 |
-| `ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-24-runtime` | Alpine Node.js 24 Runtime (npm, yarn, and corepack removed) |
-| `ghcr.io/ministryofjustice/hmpps-hardened-distroless-node` | Distroless Node.js 24 |
-| `ghcr.io/ministryofjustice/hmpps-hardened-python-alpine` | Python Alpine |
-
-All images are published for:
-
-- `linux/amd64`
-- `linux/arm64`
-
-## Usage Examples
-
-### Java 25 (Temurin)
-
-```dockerfile
-FROM ghcr.io/ministryofjustice/hmpps-hardened-eclipse-temurin-java25:v1.2.3
-```
-
-### Java 25 (Distroless)
-
-```dockerfile
-FROM ghcr.io/ministryofjustice/hmpps-hardened-distroless-java25:v1.2.3
-```
-
-### Node.js Runtime
-
-```dockerfile
-FROM ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-24-runtime:v1.2.3
-```
-
-### Python
-
-```dockerfile
-FROM ghcr.io/ministryofjustice/hmpps-hardened-python-alpine:v1.2.3
-```
-
-## Variants
 
 ### Java
 
 #### Eclipse Temurin
 
-- Java 21
-- Java 25
+| Image | Description |
+|---------|-------------|
+| `ghcr.io/ministryofjustice/hmpps-hardened-eclipse-temurin-java21` | Eclipse Temurin Java 21 |
+| `ghcr.io/ministryofjustice/hmpps-hardened-eclipse-temurin-java25` | Eclipse Temurin Java 25 |
 
 #### Distroless
 
-- Java 21
-- Java 25
+| Image | Description |
+|---------|-------------|
+| `ghcr.io/ministryofjustice/hmpps-hardened-distroless-java21` | Distroless Java 21 |
+| `ghcr.io/ministryofjustice/hmpps-hardened-distroless-java25` | Distroless Java 25 |
+
+---
 
 ### Node.js
 
-#### Alpine
+| Image | Description |
+|---------|-------------|
+| `ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-24` | Alpine Node.js 24 |
+| `ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-runtime-24` | Alpine runtime image with npm, yarn and corepack removed |
+| `ghcr.io/ministryofjustice/hmpps-hardened-distroless-node-24` | Distroless Node.js 24 |
 
-- Node.js 24
-
-#### Alpine Runtime
-
-- Node.js 24 runtime image with npm, yarn, and corepack removed
-
-#### Distroless
-
-- Node.js 24
+---
 
 ### Python
 
-- Python Alpine
+| Image | Description |
+|---------|-------------|
+| `ghcr.io/ministryofjustice/hmpps-hardened-python-alpine-3-13` | Python 3.13 Alpine |
 
-## Tagging Scheme
+---
 
-Images are tagged using the Git reference name that triggered the build.
+## Supported Platforms
 
-Examples:
+All published container images support:
 
-| Git Reference | Published Tag |
-|--------------|---------------|
-| `main` | `main` |
-| `feature/docker-updates` | `feature/docker-updates` |
-| `release-2026-01` | `release-2026-01` |
-| `v1.2.3` | `v1.2.3` |
+- `linux/amd64`
+- `linux/arm64`
 
-For example, creating the Git tag `v1.2.3` publishes:
+Pulling the same tag automatically retrieves the correct image for your platform.
+
+---
+
+## Usage
+
+### Java 25 (Temurin)
+
+```dockerfile
+FROM ghcr.io/ministryofjustice/hmpps-hardened-eclipse-temurin-java25:v1.0.0
+```
+
+### Java 25 (Distroless)
+
+```dockerfile
+FROM ghcr.io/ministryofjustice/hmpps-hardened-distroless-java25:v1.0.0
+```
+
+### Node Runtime
+
+```dockerfile
+FROM ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-runtime-24:v1.0.0
+```
+
+### Python
+
+```dockerfile
+FROM ghcr.io/ministryofjustice/hmpps-hardened-python-alpine-3-13:v1.0.0
+```
+
+---
+
+## Release Management
+
+This repository uses **Release Please** for automated semantic versioning and releases.
+
+Current version:
+
+<!-- x-release-please-version -->
+`v1.0.0`
+
+Creating a release tag publishes versioned images to GHCR.
+
+Example:
+
+```text
+v1.2.3
+```
+
+Produces:
 
 ```text
 ghcr.io/ministryofjustice/hmpps-hardened-eclipse-temurin-java25:v1.2.3
 ghcr.io/ministryofjustice/hmpps-hardened-distroless-java25:v1.2.3
-ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-24-runtime:v1.2.3
-ghcr.io/ministryofjustice/hmpps-hardened-python-alpine:v1.2.3
+ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-runtime-24:v1.2.3
+ghcr.io/ministryofjustice/hmpps-hardened-python-alpine-3-13:v1.2.3
 ```
 
-Branch-based tags are intended for development and testing only.
+Development builds are tagged using the current branch name.
 
-Production workloads should use release tags.
+Example:
 
-## Docker Image Pinning
-
-Consumers should always pin to a specific release tag.
-
-Recommended:
-
-```dockerfile
-FROM ghcr.io/ministryofjustice/hmpps-hardened-eclipse-temurin-java25:v1.2.3
+```text
+main
+feature/improve-security
 ```
 
-Avoid floating tags such as:
+These tags should not be used for production deployments.
 
-```dockerfile
-FROM ghcr.io/ministryofjustice/hmpps-hardened-eclipse-temurin-java25:main
-```
+---
 
-or:
+## CI/CD Pipeline
 
-```dockerfile
-FROM ghcr.io/ministryofjustice/hmpps-hardened-eclipse-temurin-java25:latest
-```
+The workflow runs when:
 
-For maximum supply chain integrity, pin images by digest:
-
-```dockerfile
-FROM ghcr.io/ministryofjustice/hmpps-hardened-eclipse-temurin-java25:v1.2.3@sha256:<digest>
-```
-
-Digest-pinned images are immutable and guarantee that the exact image tested is the image deployed.
-
-## CI/CD Overview
-
-Images are automatically built when:
-
-- Changes are pushed to `main`
+- Code is pushed to `main`
 - A Git tag is created
 - A pull request is opened or updated
 - The workflow is manually triggered
 
-The build pipeline includes:
+### Pipeline Stages
 
-- Multi-platform Docker Buildx builds
-- GitHub Container Registry (GHCR) publishing
-- Snyk container scanning
-- GitHub code scanning integration
-- Dependency and vulnerability analysis
-- Automatic cancellation of superseded workflow runs
-
-## Upgrading Base Versions
-
-Container image definitions are managed through the workflow matrix and associated Dockerfiles.
-
-The workflow matrix controls:
-
-- `image_name` - published image name
-- `context` - Docker build context
-- `dockerfile` - Dockerfile path
-- `publish_latest` - whether the image receives a `latest` tag
-
-Example:
-
-```yaml
-- image_name: hardened-eclipse-temurin-java25
-  context: images/java/eclipse-temurin
-  dockerfile: images/java/eclipse-temurin/Dockerfile.java25
-  publish_latest: true
+```text
+Checkout
+    ↓
+DevSecOps Checks
+    ↓
+Build Container Image
+    ↓
+Multi-Architecture Packaging
+    ↓
+Snyk Vulnerability Scan
+    ↓
+Publish to GHCR
+    ↓
+GitHub Security Reporting
 ```
 
-When upgrading an image:
+---
 
-1. Update the Dockerfile base image reference.
-2. Verify upstream image availability for both supported architectures.
-3. Create and test a pull request.
-4. Create a release tag.
-5. Update consuming applications to use the new image version.
+## Security
 
-Consumers should always reference explicit release versions rather than floating branch tags.
+Security is a core design objective of these images.
 
-## Security Updates
+Features include:
 
-Where applicable, images apply operating system updates during the build process using a dedicated build stage.
+- Minimal attack surface
+- Regular upstream base image updates
+- Vulnerability scanning via Snyk
+- GitHub Security integration
+- Immutable image digests
+- Pinned GitHub Actions
+- Multi-stage image builds
+- Automated OS patching where supported
 
-Example Alpine pattern:
+### Alpine Security Updates
 
 ```dockerfile
-FROM base-image AS base
-
 FROM base AS security-upgrades
 
 RUN apk upgrade --no-cache
 ```
 
-Example Ubuntu pattern:
+### Ubuntu/Debian Security Updates
 
 ```dockerfile
-FROM base-image AS base
-
 FROM base AS security-upgrades
 
 RUN apt-get update \
@@ -213,21 +195,89 @@ RUN apt-get update \
  && rm -rf /var/lib/apt/lists/*
 ```
 
-The CI pipeline uses BuildKit cache filtering to ensure security update layers are always rebuilt:
+BuildKit cache filtering ensures security update layers are always rebuilt:
 
 ```text
 --no-cache-filter=security-upgrades
 ```
 
-This guarantees that the latest operating system patches are applied even when other layers are served from cache.
+---
 
-Distroless images follow a different build pattern and do not include a dedicated `security-upgrades` stage.
+## Image Pinning
 
-## Security Scanning
+Production workloads should always pin to a specific release version.
 
-All published images are scanned during CI using Snyk.
+Recommended:
 
-Scanning includes:
+```dockerfile
+FROM ghcr.io/ministryofjustice/hmpps-hardened-eclipse-temurin-java25:v1.2.3
+```
 
-- Operating system vulnerabilities
-- Package
+For maximum supply-chain integrity, pin by digest:
+
+```dockerfile
+FROM ghcr.io/ministryofjustice/hmpps-hardened-eclipse-temurin-java25:v1.2.3@sha256:<digest>
+```
+
+Avoid:
+
+```dockerfile
+FROM ghcr.io/ministryofjustice/hmpps-hardened-eclipse-temurin-java25:latest
+```
+
+or
+
+```dockerfile
+FROM ghcr.io/ministryofjustice/hmpps-hardened-eclipse-temurin-java25:main
+```
+
+---
+
+## Repository Structure
+
+```text
+images/
+├── java/
+│   ├── eclipse-temurin/
+│   └── distroless/
+├── node/
+│   ├── alpine/
+│   ├── alpine-runtime/
+│   └── distroless/
+└── python/
+    └── alpine/
+```
+
+---
+
+## Publishing
+
+Images are published to:
+
+```text
+ghcr.io/ministryofjustice
+```
+
+Example:
+
+```text
+ghcr.io/ministryofjustice/hmpps-hardened-eclipse-temurin-java25
+```
+
+---
+
+## Contributing
+
+1. Update the relevant Dockerfile.
+2. Test locally.
+3. Open a pull request.
+4. Ensure security scans pass.
+5. Merge to `main`.
+6. Allow Release Please to generate a release PR.
+7. Publish a release and consume the new image tag.
+
+---
+
+## License
+
+Released under the MIT License unless otherwise specified.
