@@ -33,8 +33,11 @@ jobs:
   build-scan-push:
     if: >-
       ${{
-        github.actor != 'hmpps-release-please[bot]' &&
-        !contains(github.event.head_commit.message || '', 'chore(main): release')
+        github.ref_type == 'tag' ||
+        (
+          github.actor != 'hmpps-release-please[bot]' &&
+          !contains(github.event.head_commit.message || '', 'chore(main): release')
+        )
       }}
     needs: DevSecOps
     name: Build-Scan-Push
