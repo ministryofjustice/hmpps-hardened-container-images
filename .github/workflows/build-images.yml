@@ -71,16 +71,16 @@ jobs:
             dockerfile: images/node/alpine/Dockerfile.node24-npm11
             tag_prefix: ''
             publish_latest: false
-          - image_name: hardened-alpine-node-24-runtime
+          - image_name: hardened-alpine-node-runtime-24
             context: images/node/alpine-runtime
             dockerfile: images/node/alpine-runtime/Dockerfile
             tag_prefix: ''
             publish_latest: true
-          - image_name: hardened-distroless-node
+          - image_name: hardened-distroless-node-24
             context: images/node/distroless
             dockerfile: images/node/distroless/Dockerfile
             publish_latest: true
-          - image_name: hardened-python-alpine
+          - image_name: hardened-python-alpine-3-13
             context: images/python/alpine
             dockerfile: images/python/alpine/Dockerfile
             tag_prefix: ''
@@ -106,7 +106,7 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/hmpps-${{ matrix.image_name }}
           tags: |
             type=raw,value=${{ env.IMAGE_TAG }}
-            type=raw,value=${{ matrix.image_name }}-${{ env.IMAGE_TAG }}
+            # type=raw,value=${{ matrix.image_name }}-${{ env.IMAGE_TAG }}
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0 # v4.4.0
@@ -122,10 +122,10 @@ jobs:
           file: ./${{ matrix.dockerfile }}
           # main/scheduled builds publish multi-arch images; PR builds stay amd64-only
           # so the image can be loaded locally on the amd64 GitHub runner for Snyk scanning.
-          platforms: ${{ (github.ref == 'refs/heads/main' || github.event_name == 'schedule') && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
+          platforms: ${{ (github.ref == 'refs/heads/main' || github.ref_type == 'tag'|| github.event_name == 'schedule') && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
           pull: true
-          push: ${{ github.ref == 'refs/heads/main' || github.event_name == 'schedule' }}
-          load: ${{ !(github.ref == 'refs/heads/main' || github.event_name == 'schedule') }}
+          push: ${{ github.ref == 'refs/heads/main' || github.ref_type == 'tag' || github.event_name == 'schedule' }}
+          load: ${{ github.ref == 'refs/heads/main' || github.ref_type == 'tag' || github.event_name == 'schedule' }}
           # main/scheduled builds use metadata-action tags and push to GHCR.
           # PR builds use a local-only snyk-scan:* tag (not pushed) for container scanning.
           tags: ${{ steps.meta.outputs.tags }}
