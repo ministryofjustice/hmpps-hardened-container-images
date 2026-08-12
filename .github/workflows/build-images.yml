@@ -97,7 +97,12 @@ jobs:
       - name: Sanitise Tag Name
         id: snyk_image
         run: |
-          TAG=$(echo "${{ env.IMAGE_TAG }}" | tr '/' '-' | tr '_' '-' | tr '[:upper:]' '[:lower:]')
+          TAG=$(echo "${{ env.IMAGE_TAG }}" \
+            | tr '[:upper:]' '[:lower:]' \
+            | sed 's|[^a-z0-9.-]|-|g' \
+            | cut -c1-100
+          )
+          TAG=$(echo "$TAG" | tr '/' '-' | tr '_' '-' | tr '[:upper:]' '[:lower:]')
           echo "image_tag=${TAG}" >> "$GITHUB_OUTPUT"
           echo "image_ref=${{ env.REGISTRY }}/${{ github.repository_owner }}/hmpps-${{ matrix.image_name }}:${TAG}" >> "$GITHUB_OUTPUT"
 
