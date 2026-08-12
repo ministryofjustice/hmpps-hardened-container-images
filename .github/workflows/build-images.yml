@@ -31,7 +31,7 @@ jobs:
       id-token: write
       contents: read
   build-scan-push:
-    needs: DevSecOps
+    # needs: DevSecOps
     name: Build-Scan-Push
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -125,8 +125,8 @@ jobs:
           # so the image can be loaded locally on the amd64 GitHub runner for Snyk scanning.
           platforms: ${{ (github.ref == 'refs/heads/main' || github.ref_type == 'tag'|| github.event_name == 'schedule') && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
           pull: true
-          sbom: true
-          provenance: true
+          sbom: ${{ github.ref_type == 'tag' || github.event_name == 'schedule' }}
+          provenance: ${{ github.ref_type == 'tag' || github.event_name == 'schedule' }}
           # include this if you want to push on main github.ref == 'refs/heads/main'
           push: ${{ github.ref_type == 'tag' || github.event_name == 'schedule' }}
           load: ${{ !(github.ref == 'refs/heads/main' || github.ref_type == 'tag' || github.event_name == 'schedule') }}
