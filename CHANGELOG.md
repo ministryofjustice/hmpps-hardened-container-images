@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.0 (2026-08-12)
+
+
+### Features
+
+* new DevSecOps workflow ([b3c6e42](https://github.com/ministryofjustice/hmpps-hardened-container-images/commit/b3c6e4206413124eb8319c318a79c92b54e28234))
+* new DevSecOps workflow ([71f9d56](https://github.com/ministryofjustice/hmpps-hardened-container-images/commit/71f9d5600bebe76310166be2423cd535f63220b7))
+
 ## [1.2.0](https://github.com/ministryofjustice/hmpps-hardened-container-images/compare/v1.1.0...v1.2.0) (2026-08-12)
 
 
