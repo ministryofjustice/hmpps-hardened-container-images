@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.0.2](https://github.com/ministryofjustice/hmpps-hardened-container-images/compare/v1.0.1...v1.0.2) (2026-08-12)
+
+
+### Bug Fixes
+
+* optimise pipeline ([b425e01](https://github.com/ministryofjustice/hmpps-hardened-container-images/commit/b425e01088ff98962c3aa8343ac29d231421add8))
+* optimise pipeline ([0f08814](https://github.com/ministryofjustice/hmpps-hardened-container-images/commit/0f08814bc0fe093bd71ef6b136ff6d2ddadda0f2))
+* optimise pipeline ([c26e613](https://github.com/ministryofjustice/hmpps-hardened-container-images/commit/c26e6138e36d8ba339d7a64e9df78562fa749b93))
+
 ## [1.0.1](https://github.com/ministryofjustice/hmpps-hardened-container-images/compare/v1.0.0...v1.0.1) (2026-08-11)
 
 
