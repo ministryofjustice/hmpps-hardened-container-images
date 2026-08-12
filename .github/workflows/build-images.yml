@@ -148,7 +148,7 @@ jobs:
 
       - name: Snyk scan
         id: snyk-scan
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/snyk-scan@f-stop-snyk-running-for-dependabot
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/snyk-scan@35bb5e74a025299cddf50909c1968444d966c1dc
         with:
           subproject: ${{ matrix.dockerfile }}
           severity: high
