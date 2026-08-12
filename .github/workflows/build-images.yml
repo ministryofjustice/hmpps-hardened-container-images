@@ -133,7 +133,8 @@ jobs:
       - name: Resolve image reference for Snyk scan
         id: snyk_image
         run: |
-          echo "image_ref=${{ env.REGISTRY }}/${{ github.repository_owner }}/hmpps-${{ matrix.image_name }}:${{ env.IMAGE_TAG }}" >> "$GITHUB_OUTPUT"
+          TAG=$(echo "${{ env.IMAGE_TAG }}" | tr '/' '-' | tr '[:upper:]' '[:lower:]')
+          echo "image_ref=${{ env.REGISTRY }}/${{ github.repository_owner }}/hmpps-${{ matrix.image_name }}:${TAG}" >> "$GITHUB_OUTPUT"
 
       - name: Snyk scan
         id: snyk-scan
