@@ -31,7 +31,7 @@ jobs:
       id-token: write
       contents: read
   build-scan-push:
-    needs: DevSecOps
+    # needs: DevSecOps
     name: Build-Scan-Push
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -97,7 +97,7 @@ jobs:
       - name: Sanitise Tag Name
         id: snyk_image
         run: |
-          TAG=$(echo "${{ env.IMAGE_TAG }}" | tr '/' '-' | tr '[:upper:]' '[:lower:]')
+          TAG=$(echo "${{ env.IMAGE_TAG }}" | tr '/' '-' | tr '_' '-' | tr '[:upper:]' '[:lower:]')
           echo "image_tag=${TAG}" >> "$GITHUB_OUTPUT"
           echo "image_ref=${{ env.REGISTRY }}/${{ github.repository_owner }}/hmpps-${{ matrix.image_name }}:${TAG}" >> "$GITHUB_OUTPUT"
 
@@ -108,7 +108,6 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/hmpps-${{ matrix.image_name }}
           tags: |
             type=raw,value=${{ steps.snyk_image.outputs.image_tag }}
-            # type=raw,value=${{ matrix.image_name }}-${{ steps.snyk_image.outputs.image_tag }}
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0 # v4.4.0
@@ -126,12 +125,16 @@ jobs:
           # so the image can be loaded locally on the amd64 GitHub runner for Snyk scanning.
           platforms: ${{ (github.ref == 'refs/heads/main' || github.ref_type == 'tag'|| github.event_name == 'schedule') && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
           pull: true
+          sbom: ${{ github.ref_type == 'tag' || github.event_name == 'schedule' }}
+          provenance: ${{ github.ref_type == 'tag' || github.event_name == 'schedule' }}
           # include this if you want to push on main github.ref == 'refs/heads/main'
           push: ${{ github.ref_type == 'tag' || github.event_name == 'schedule' }}
           load: ${{ !(github.ref == 'refs/heads/main' || github.ref_type == 'tag' || github.event_name == 'schedule') }}
           # main/scheduled builds use metadata-action tags and push to GHCR.
           # PR builds use a local-only snyk-scan:* tag (not pushed) for container scanning.
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: |
+            ${{ steps.meta.outputs.tags }}
+            snyk-scan:${{ github.sha }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -149,7 +152,7 @@ jobs:
           snyk_policy_path: ''
           github_token: ${{ secrets.GITHUB_TOKEN }}
           snyk_token: ${{ secrets.HMPPS_SNYK_API_KEY }}
-          image_ref: ${{ steps.snyk_image.outputs.image_ref }}
+          image_ref: "snyk-scan:${{ github.sha }}"
 
       # - name: Snyk slack notification
       #   uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_snyk_scan_notification@35bb5e74a025299cddf50909c1968444d966c1dc
