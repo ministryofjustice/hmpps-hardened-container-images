@@ -3,7 +3,7 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"  # Location of workflow files
     schedule:
-      interval: "weekly"
+      interval: "daily"
     cooldown:
       default-days: 7
     ignore:
@@ -29,6 +29,6 @@ updates:
       - "/images/node/distroless"
       - "/images/python/alpine"
     schedule:
-      interval: "weekly"
+      interval: "daily"
     cooldown:
       default-days: 7
