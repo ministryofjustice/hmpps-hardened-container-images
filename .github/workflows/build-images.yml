@@ -120,7 +120,7 @@ jobs:
           platforms: ${{ (github.ref == 'refs/heads/main' || github.ref_type == 'tag'|| github.event_name == 'schedule') && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
           pull: true
           push: ${{ github.ref == 'refs/heads/main' || github.ref_type == 'tag' || github.event_name == 'schedule' }}
-          load: ${{ github.ref == 'refs/heads/main' || github.ref_type == 'tag' || github.event_name == 'schedule' }}
+          load: ${{ !(github.ref == 'refs/heads/main' || github.ref_type == 'tag' || github.event_name == 'schedule') }}
           # main/scheduled builds use metadata-action tags and push to GHCR.
           # PR builds use a local-only snyk-scan:* tag (not pushed) for container scanning.
           tags: ${{ steps.meta.outputs.tags }}
