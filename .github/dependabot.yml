@@ -1,34 +1,104 @@
 version: 2
 updates:
   - package-ecosystem: "github-actions"
-    directory: "/"  # Location of workflow files
+    directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly" # daily is redundant given the 7-day cooldown below
     cooldown:
-      default-days: 7
+      default-days: 7 # avoids PRs for versions that are too new to be stable
     ignore:
+      # minor bumps to internal MoJ actions are low-risk and high-noise; patches still flow through for security fixes
       - dependency-name: "ministryofjustice/hmpps-github-actions/*"
         update-types:
           - "version-update:semver-minor"
-          - "version-update:semver-patch"
       - dependency-name: "ministryofjustice/hmpps-github-shared-actions/*"
         update-types:
           - "version-update:semver-minor"
-          - "version-update:semver-patch"
     groups:
-      github-actions-dependencies:
+      github-actions-patch: # auto-mergeable: low risk
         patterns:
           - "*"
+        update-types:
+          - "patch"
+      github-actions-minor: # auto-approvable: review recommended
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+      github-actions-major: # manual review required: breaking changes possible
+        patterns:
+          - "*"
+        update-types:
+          - "major"
 
   - package-ecosystem: "docker"
     directories:
-      - "/images/java/distroless"
-      - "/images/java/eclipse-temurin"
-      - "/images/node/alpine"
-      - "/images/node/alpine-runtime"
-      - "/images/node/distroless"
-      - "/images/python/alpine"
+      - "/images/**/*" # covers all image subdirectories
+    groups:
+      docker-patch: # auto-mergeable: low risk
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
+      docker-minor: # auto-approvable: review recommended
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+      docker-major: # manual review required: breaking changes possible
+        patterns:
+          - "*"
+        update-types:
+          - "major"
     schedule:
-      interval: "daily"
+      interval: "weekly" # daily is redundant given the 7-day cooldown below
+    cooldown:
+      default-days: 7 # avoids PRs for versions that are too new to be stable
+
+  - package-ecosystem: "npm" # detects pinned npm versions inside node Dockerfiles
+    directories:
+      - "/images/node/**/*"
+    groups:
+      npm-patch: # auto-mergeable: low risk
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
+      npm-minor: # auto-approvable: review recommended
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+      npm-major: # manual review required: breaking changes possible
+        patterns:
+          - "*"
+        update-types:
+          - "major"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 7
+
+  - package-ecosystem: "pip" # detects pinned pip versions inside python Dockerfiles
+    directories:
+      - "/images/python/**/*"
+    groups:
+      pip-patch: # auto-mergeable: low risk
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
+      pip-minor: # auto-approvable: review recommended
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+      pip-major: # manual review required: breaking changes possible
+        patterns:
+          - "*"
+        update-types:
+          - "major"
+    schedule:
+      interval: "weekly"
     cooldown:
       default-days: 7
