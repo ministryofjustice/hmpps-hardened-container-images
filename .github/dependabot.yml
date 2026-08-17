@@ -15,15 +15,11 @@ updates:
         update-types:
           - "version-update:semver-minor"
     groups:
-      github-actions-patch: # auto-mergeable: low risk
+      github-actions-minor-patch: # auto-mergeable: low risk
         patterns:
           - "*"
         update-types:
           - "patch"
-      github-actions-minor: # auto-approvable: review recommended
-        patterns:
-          - "*"
-        update-types:
           - "minor"
       github-actions-major: # manual review required: breaking changes possible
         patterns:
@@ -35,15 +31,11 @@ updates:
     directories:
       - "*" # covers all image subdirectories
     groups:
-      docker-patch: # auto-mergeable: low risk
+      docker-minor-patch: # auto-mergeable: low risk
         patterns:
           - "*"
         update-types:
           - "patch"
-      docker-minor: # auto-approvable: review recommended
-        patterns:
-          - "*"
-        update-types:
           - "minor"
       docker-major: # manual review required: breaking changes possible
         patterns:
@@ -59,15 +51,11 @@ updates:
     directories:
       - "*"
     groups:
-      npm-patch: # auto-mergeable: low risk
+      npm-minor-patch: # auto-mergeable: low risk
         patterns:
           - "*"
         update-types:
           - "patch"
-      npm-minor: # auto-approvable: review recommended
-        patterns:
-          - "*"
-        update-types:
           - "minor"
       npm-major: # manual review required: breaking changes possible
         patterns:
@@ -83,16 +71,13 @@ updates:
     directories:
       - "*"
     groups:
-      pip-patch: # auto-mergeable: low risk
+      pip-minor-patch: # auto-mergeable: low risk
         patterns:
           - "*"
         update-types:
           - "patch"
-      pip-minor: # auto-approvable: review recommended
-        patterns:
-          - "*"
-        update-types:
           - "minor"
+
       pip-major: # manual review required: breaking changes possible
         patterns:
           - "*"
