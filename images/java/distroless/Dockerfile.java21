@@ -14,7 +14,7 @@ RUN chown appuser:appgroup /home/appuser/.postgresql/root.crt && \
     chmod 0644 /home/appuser/.postgresql/root.crt
 
 # gcr.io/distroless/java21-debian13:nonroot
-FROM gcr.io/distroless/java21-debian13@sha256:e7c40c2378f8c4462aea63041f6b29b7f2b9ab8e80b9217d6d5faf70dfff1779 AS runtime
+FROM gcr.io/distroless/java21-debian13@sha256:5c3795442a2e3a035500f5c643786a4fb9669f4d62c98d3ee23f04b7d05ef422 AS runtime
 
 ARG APP_UID=2000
 ARG APP_GID=2000
