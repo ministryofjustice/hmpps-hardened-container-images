@@ -33,7 +33,7 @@ updates:
 
   - package-ecosystem: "docker"
     directories:
-      - "/images/**/*" # covers all image subdirectories
+      - "*" # covers all image subdirectories
     groups:
       docker-patch: # auto-mergeable: low risk
         patterns:
@@ -57,7 +57,7 @@ updates:
 
   - package-ecosystem: "npm" # detects pinned npm versions inside node Dockerfiles
     directories:
-      - "/images/node/**/*"
+      - "*"
     groups:
       npm-patch: # auto-mergeable: low risk
         patterns:
@@ -81,7 +81,7 @@ updates:
 
   - package-ecosystem: "pip" # detects pinned pip versions inside python Dockerfiles
     directories:
-      - "/images/python/**/*"
+      - "*"
     groups:
       pip-patch: # auto-mergeable: low risk
         patterns:
