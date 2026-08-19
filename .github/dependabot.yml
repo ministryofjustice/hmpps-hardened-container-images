@@ -1,7 +1,8 @@
 version: 2
 updates:
   - package-ecosystem: "github-actions"
-    directory: "*"
+    directories:
+      - "*" # covers all image subdirectories
     schedule:
       interval: "weekly" # daily is redundant given the 7-day cooldown below
     cooldown:
