@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.1.0](https://github.com/ministryofjustice/hmpps-hardened-container-images/compare/v1.0.2...v1.1.0) (2026-08-19)
+
+
+### Features
+
+* optimise new dependabot config ([8305073](https://github.com/ministryofjustice/hmpps-hardened-container-images/commit/83050736e45e7146adbd312f6ba0fc229795d1e4))
+
+
+### Bug Fixes
+
+* dependabot config ([2668df6](https://github.com/ministryofjustice/hmpps-hardened-container-images/commit/2668df664ec90a5be4523a973970bc05e3b8976a))
+* dependabot config ([#52](https://github.com/ministryofjustice/hmpps-hardened-container-images/issues/52)) ([21ee3ea](https://github.com/ministryofjustice/hmpps-hardened-container-images/commit/21ee3eafc4156b94a1524af05a5892569da0627e))
+* optimise dependabot ([f10029e](https://github.com/ministryofjustice/hmpps-hardened-container-images/commit/f10029e145c64a9bb0560d61f77e2539ffb2c21a))
+* release-please config ([01e28ca](https://github.com/ministryofjustice/hmpps-hardened-container-images/commit/01e28cad86c43134062a9f72983883bc1a5f393b))
+
 ## [1.0.2](https://github.com/ministryofjustice/hmpps-hardened-container-images/compare/v1.0.1...v1.0.2) (2026-08-17)
 
 
