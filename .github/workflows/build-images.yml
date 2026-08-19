@@ -10,9 +10,6 @@ on:
       - main
   pull_request:
   workflow_dispatch:
-  schedule:
-    - cron: "19 6 * * MON-FRI" # Every weekday
-
 
 env:
   REGISTRY: ghcr.io
@@ -27,7 +24,6 @@ jobs:
     secrets:
       HMPPS_RELEASE_PLEASE_CLIENT_ID: ${{ secrets.HMPPS_RELEASE_PLEASE_CLIENT_ID }}
       HMPPS_RELEASE_PLEASE_KEY: ${{ secrets.HMPPS_RELEASE_PLEASE_KEY }}
-      SECURITY_ALERTS_SLACK_CHANNEL_ID: ${{ vars.SECURITY_ALERTS_SLACK_CHANNEL_ID || 'NO_SLACK' }}
     permissions:
       # Needed to upload the results to code-scanning dashboard.
       security-events: write
