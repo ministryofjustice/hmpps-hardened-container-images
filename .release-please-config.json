@@ -1,6 +1,40 @@
 {
-  "release-type": "simple",
   "extra-files": [
     "README.md"
+  ],
+  "changelog-sections": [
+      {
+        "type": "feat",
+        "section": "Features"
+      },
+      {
+        "type": "docs",
+        "section": "Documentation"
+      },
+      {
+        "type": "build",
+        "section": "Dependencies"
+      },
+      {
+        "type": "deps",
+        "section": "Dependencies"
+      },
+      {
+        "type": "chore",
+        "section": "Dependencies"
+      },
+      {
+        "type": "fix",
+        "section": "Bug Fixes"
+      },
+      {
+        "type": "perf",
+        "section": "Performance"
+      },
+      {
+        "type": "refactor",
+        "section": "Refactoring"
+      }
   ]
+
 }

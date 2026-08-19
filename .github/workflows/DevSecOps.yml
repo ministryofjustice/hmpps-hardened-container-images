@@ -12,6 +12,24 @@ on:
         required: true
 
 jobs:
+  commitlint:
+    # release-please's own PRs (release-please--branches--main) and its squash-merge
+    # commits to main are auto-generated, not authored per conventional-commit rules.
+    if: >-
+      github.head_ref != 'release-please--branches--main' && github.head_ref != 'main' &&
+      github.actor != 'hmpps-release-please[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Lint commits
+        uses: wagoid/commitlint-github-action@b96228e5e60f4dcc5354c98529d6a729562f0f24 # v6.2.1
+        with:
+          configFile: commitlint.config.js
+
   dependency-review:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request' && github.actor != 'hmpps-release-please[bot]'
