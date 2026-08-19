@@ -1,7 +1,0 @@
-{
-  "release-type": "simple",
-  "extra-files": [
-    "README.md"
-  ],
-  ".": "1.0.2"
-}
