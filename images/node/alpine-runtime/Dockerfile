@@ -3,7 +3,7 @@
 # HMPPS Node.js Runtime Base Image.
 # The digest must resolve to the intended Node 24 Alpine image.
 # Pinned to tag 24.19.0-alpine3.24 via sha.
-FROM node@sha256:bde0dae02f2b12d2bce5ee72b2432f0e511767b7b2dc4dd3b064df11ae422fee AS base
+FROM node@sha256:d32cdf619f63fe0471182d08996dd516c6275bb5fd31ae06e55a570bd9e1ad43 AS base
 
 LABEL org.opencontainers.image.title="HMPPS Node.js Runtime Base Image"
 LABEL org.opencontainers.image.description="Runtime-only container image for HMPPS Node.js applications with package managers removed"
