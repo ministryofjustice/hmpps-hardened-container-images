@@ -21,11 +21,15 @@ updates:
         update-types:
           - "patch"
           - "minor"
+
       github-actions-major: # manual review required: breaking changes possible
         patterns:
           - "*"
         update-types:
           - "major"
+      github-actions-catch-all: # manual review required: breaking changes possible
+        patterns:
+          - "*"
 
   - package-ecosystem: "docker"
     directories:
@@ -42,6 +46,11 @@ updates:
           - "*"
         update-types:
           - "major"
+
+      docker-others: # manual catch-all for any other docker updates that don't match the above groups
+        patterns:
+          - "*"
+
     schedule:
       interval: "weekly" # daily is redundant given the 7-day cooldown below
     cooldown:
@@ -62,6 +71,9 @@ updates:
           - "*"
         update-types:
           - "major"
+      npm-others: # manual catch-all for any other npm updates that don't match the above groups
+        patterns:
+          - "*"
     schedule:
       interval: "weekly"
     cooldown:
