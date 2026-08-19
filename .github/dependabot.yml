@@ -7,14 +7,6 @@ updates:
       interval: "weekly" # daily is redundant given the 7-day cooldown below
     cooldown:
       default-days: 7 # avoids PRs for versions that are too new to be stable
-    ignore:
-      # minor bumps to internal MoJ actions are low-risk and high-noise; patches still flow through for security fixes
-      - dependency-name: "ministryofjustice/hmpps-github-actions/*"
-        update-types:
-          - "version-update:semver-minor"
-      - dependency-name: "ministryofjustice/hmpps-github-shared-actions/*"
-        update-types:
-          - "version-update:semver-minor"
     groups:
       minor-patch: # auto-mergeable: low risk
         patterns:
