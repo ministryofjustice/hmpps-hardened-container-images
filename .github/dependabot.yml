@@ -15,19 +15,19 @@ updates:
         update-types:
           - "version-update:semver-minor"
     groups:
-      github-actions-minor-patch: # auto-mergeable: low risk
+      minor-patch: # auto-mergeable: low risk
         patterns:
           - "*"
         update-types:
           - "patch"
           - "minor"
 
-      github-actions-major: # manual review required: breaking changes possible
+      major: # manual review required: breaking changes possible
         patterns:
           - "*"
         update-types:
           - "major"
-      github-actions-bumps: # manual catch-all for any other github-actions updates that don't match the above groups
+      bumps: # manual catch-all for any other updates that don't match the above groups
         patterns:
           - "*"
 
@@ -35,19 +35,19 @@ updates:
     directories:
       - "*" # covers all image subdirectories
     groups:
-      docker-minor-patch: # auto-mergeable: low risk
+      minor-patch: # auto-mergeable: low risk
         patterns:
           - "*"
         update-types:
           - "patch"
           - "minor"
-      docker-major: # manual review required: breaking changes possible
+      major: # manual review required: breaking changes possible
         patterns:
           - "*"
         update-types:
           - "major"
 
-      docker-bumps: # manual catch-all for any other docker updates that don't match the above groups
+      bumps: # manual catch-all for any other updates that don't match the above groups
         patterns:
           - "*"
 
@@ -60,18 +60,18 @@ updates:
     directories:
       - "*"
     groups:
-      npm-minor-patch: # auto-mergeable: low risk
+      minor-patch: # auto-mergeable: low risk
         patterns:
           - "*"
         update-types:
           - "patch"
           - "minor"
-      npm-major: # manual review required: breaking changes possible
+      major: # manual review required: breaking changes possible
         patterns:
           - "*"
         update-types:
           - "major"
-      npm-bumps: # manual catch-all for any other npm updates that don't match the above groups
+      bumps: # manual catch-all for any other updates that don't match the above groups
         patterns:
           - "*"
     schedule:
@@ -83,19 +83,19 @@ updates:
     directories:
       - "*"
     groups:
-      pip-minor-patch: # auto-mergeable: low risk
+      minor-patch: # auto-mergeable: low risk
         patterns:
           - "*"
         update-types:
           - "patch"
           - "minor"
 
-      pip-major: # manual review required: breaking changes possible
+      major: # manual review required: breaking changes possible
         patterns:
           - "*"
         update-types:
           - "major"
-      pip-bumps: # manual catch-all for any other pip updates that don't match the above groups
+      bumps: # manual catch-all for any other updates that don't match the above groups
         patterns:
           - "*"
     schedule:
