@@ -1,97 +1,25 @@
 version: 2
+multi-ecosystem-groups:
+  infrastructure:
+    schedule:
+      interval: "weekly"
+
 updates:
   - package-ecosystem: "github-actions"
-    directories:
-      - "*" # covers all image subdirectories
-    schedule:
-      interval: "weekly" # daily is redundant given the 7-day cooldown below
-    cooldown:
-      default-days: 7 # avoids PRs for versions that are too new to be stable
-    groups:
-      minor-patch: # auto-mergeable: low risk
-        patterns:
-          - "*"
-        update-types:
-          - "patch"
-          - "minor"
-
-      major: # manual review required: breaking changes possible
-        patterns:
-          - "*"
-        update-types:
-          - "major"
-      bumps: # manual catch-all for any other updates that don't match the above groups
-        patterns:
-          - "*"
-
-  - package-ecosystem: "docker"
-    directories:
-      - "*" # covers all image subdirectories
-    groups:
-      minor-patch: # auto-mergeable: low risk
-        patterns:
-          - "*"
-        update-types:
-          - "patch"
-          - "minor"
-      major: # manual review required: breaking changes possible
-        patterns:
-          - "*"
-        update-types:
-          - "major"
-
-      bumps: # manual catch-all for any other updates that don't match the above groups
-        patterns:
-          - "*"
-
-    schedule:
-      interval: "weekly" # daily is redundant given the 7-day cooldown below
-    cooldown:
-      default-days: 7 # avoids PRs for versions that are too new to be stable
-
-  - package-ecosystem: "npm" # detects pinned npm versions inside node Dockerfiles
-    directories:
-      - "*"
-    groups:
-      minor-patch: # auto-mergeable: low risk
-        patterns:
-          - "*"
-        update-types:
-          - "patch"
-          - "minor"
-      major: # manual review required: breaking changes possible
-        patterns:
-          - "*"
-        update-types:
-          - "major"
-      bumps: # manual catch-all for any other updates that don't match the above groups
-        patterns:
-          - "*"
-    schedule:
-      interval: "weekly"
+    multi-ecosystem-group: "infrastructure"
+    directory: "/"  # Location of workflow files
+    patterns: ["*"]
     cooldown:
       default-days: 7
-
-  - package-ecosystem: "pip" # detects pinned pip versions inside python Dockerfiles
+  - package-ecosystem: "docker"
+    multi-ecosystem-group: "infrastructure"
+    patterns: ["*"]
     directories:
-      - "*"
-    groups:
-      minor-patch: # auto-mergeable: low risk
-        patterns:
-          - "*"
-        update-types:
-          - "patch"
-          - "minor"
-
-      major: # manual review required: breaking changes possible
-        patterns:
-          - "*"
-        update-types:
-          - "major"
-      bumps: # manual catch-all for any other updates that don't match the above groups
-        patterns:
-          - "*"
-    schedule:
-      interval: "weekly"
+      - "/images/java/distroless"
+      - "/images/java/eclipse-temurin"
+      - "/images/node/alpine"
+      - "/images/node/alpine-runtime"
+      - "/images/node/distroless"
+      - "/images/python/alpine"
     cooldown:
       default-days: 7
