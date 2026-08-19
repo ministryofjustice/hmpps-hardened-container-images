@@ -126,7 +126,6 @@ jobs:
         with:
           sarif_file: results.sarif
 
-
   release-please:
     runs-on: ubuntu-latest
     if: ${{ github.ref == 'refs/heads/main' || github.ref_type == 'tag' }}

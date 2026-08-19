@@ -5,7 +5,7 @@ FROM eclipse-temurin@sha256:c42fecf62f32725c65cfea284c012526d6fb31cc78123c740ebd
 # Metadata
 LABEL org.opencontainers.image.title="HMPPS Java Base Image (Java 25)"
 LABEL org.opencontainers.image.description="Base container image for Java 25 applications in HMPPS"
-LABEL org.opencontainers.image.source = "https://github.com/ministryofjustice/hmpps-hardened-container-images"
+LABEL org.opencontainers.image.source="https://github.com/ministryofjustice/hmpps-hardened-container-images"
 LABEL org.opencontainers.image.vendor="Ministry of Justice"
 LABEL hmpps.java.base_variant="25-jre-jammy"
 LABEL hmpps.java.base_image="eclipse-temurin"

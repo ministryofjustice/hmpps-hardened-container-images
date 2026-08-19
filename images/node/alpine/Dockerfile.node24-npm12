@@ -5,7 +5,7 @@ FROM node@sha256:d32cdf619f63fe0471182d08996dd516c6275bb5fd31ae06e55a570bd9e1ad4
 # Metadata
 LABEL org.opencontainers.image.title="HMPPS Node.js Base Image"
 LABEL org.opencontainers.image.description="Base container image for Node.js applications in HMPPS"
-LABEL org.opencontainers.image.source = "https://github.com/ministryofjustice/hmpps-hardened-container-images"
+LABEL org.opencontainers.image.source="https://github.com/ministryofjustice/hmpps-hardened-container-images"
 LABEL org.opencontainers.image.vendor="Ministry of Justice"
 LABEL hmpps.node.base_variant="24.19.0-alpine3.24"
 LABEL hmpps.node.base_image="node"
@@ -26,8 +26,12 @@ RUN ln -snf /usr/share/zoneinfo/${TZ} /etc/localtime && echo ${TZ} > /etc/timezo
 FROM base AS security-upgrades
 # renovate: datasource=npm depName=npm
 ARG NPM_VERSION=12.0.2
+ARG NPM_SHA512=b885e890b9418fa1693544d05f53e64f9a73ec194837d4258b15fecdd692347b1dd2a517b1b0cbaf9d31cd8e92c3b70956bd2ecc72833a57b4b3098f5bfa7943
 # NPM upgrade can be reverted when the default version gets bumps in the base
-RUN npm install -g npm@${NPM_VERSION} && npm cache clean --force && \
+RUN npm pack npm@${NPM_VERSION} --pack-destination /tmp && \
+    echo "${NPM_SHA512}  /tmp/npm-${NPM_VERSION}.tgz" | sha512sum -c - && \
+    npm install -g /tmp/npm-${NPM_VERSION}.tgz && \
+    rm /tmp/npm-${NPM_VERSION}.tgz && npm cache clean --force && \
     find /usr/local/lib/node_modules -name "*.md" -delete && \
     find /usr/local/lib/node_modules -name "*.txt" -delete && \
     find /usr/local/lib/node_modules -name "CHANGELOG*" -delete && \

@@ -7,7 +7,7 @@ FROM node@sha256:d32cdf619f63fe0471182d08996dd516c6275bb5fd31ae06e55a570bd9e1ad4
 
 LABEL org.opencontainers.image.title="HMPPS Node.js Runtime Base Image"
 LABEL org.opencontainers.image.description="Runtime-only container image for HMPPS Node.js applications with package managers removed"
-LABEL org.opencontainers.image.source = "https://github.com/ministryofjustice/hmpps-hardened-container-images"
+LABEL org.opencontainers.image.source="https://github.com/ministryofjustice/hmpps-hardened-container-images"
 LABEL org.opencontainers.image.vendor="Ministry of Justice"
 LABEL org.opencontainers.image.base.name="alpine:3.24.1"
 LABEL hmpps.node.base_image="alpine"

@@ -21,7 +21,7 @@ ARG APP_GID=2000
 
 LABEL org.opencontainers.image.title="HMPPS Java Base Image (Distroless Java 21)"
 LABEL org.opencontainers.image.description="Distroless runtime image for Java 21 applications in HMPPS"
-LABEL org.opencontainers.image.source = "https://github.com/ministryofjustice/hmpps-hardened-container-images"
+LABEL org.opencontainers.image.source="https://github.com/ministryofjustice/hmpps-hardened-container-images"
 LABEL org.opencontainers.image.vendor="Ministry of Justice"
 LABEL hmpps.java.base_variant="distroless"
 LABEL org.opencontainers.image.base.name="gcr.io/distroless/java21-debian13:nonroot"

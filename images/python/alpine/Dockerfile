@@ -4,7 +4,7 @@ FROM ghcr.io/astral-sh/uv:python3.13-alpine@sha256:e9a8312ed6a98f515208dd792c611
 # Metadata
 LABEL org.opencontainers.image.title="HMPPS Python Base Image"
 LABEL org.opencontainers.image.description="Base container image for Python applications used within HMPPS"
-LABEL org.opencontainers.image.source = "https://github.com/ministryofjustice/hmpps-hardened-container-images"
+LABEL org.opencontainers.image.source="https://github.com/ministryofjustice/hmpps-hardened-container-images"
 LABEL org.opencontainers.image.vendor="Ministry of Justice"
 LABEL hmpps.python.base_variant="python3.13-alpine"
 LABEL hmpps.python.base_image="ghcr.io/astral-sh/uv"

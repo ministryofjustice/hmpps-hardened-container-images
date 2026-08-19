@@ -18,7 +18,7 @@ ARG APP_GID=2000
 
 LABEL org.opencontainers.image.title="HMPPS Node.js Runtime Base Image (Distroless)"
 LABEL org.opencontainers.image.description="Distroless runtime image for Node.js applications in HMPPS"
-LABEL org.opencontainers.image.source = "https://github.com/ministryofjustice/hmpps-hardened-container-images"
+LABEL org.opencontainers.image.source="https://github.com/ministryofjustice/hmpps-hardened-container-images"
 LABEL org.opencontainers.image.vendor="Ministry of Justice"
 LABEL hmpps.node.base_variant="distroless"
 LABEL org.opencontainers.image.base.name="gcr.io/distroless/nodejs22-debian13:nonroot"

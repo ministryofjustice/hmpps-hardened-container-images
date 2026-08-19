@@ -5,7 +5,7 @@ FROM node@sha256:d32cdf619f63fe0471182d08996dd516c6275bb5fd31ae06e55a570bd9e1ad4
 # Metadata
 LABEL org.opencontainers.image.title="HMPPS Node.js Base Image"
 LABEL org.opencontainers.image.description="Base container image for Node.js applications in HMPPS"
-LABEL org.opencontainers.image.source = "https://github.com/ministryofjustice/hmpps-hardened-container-images"
+LABEL org.opencontainers.image.source="https://github.com/ministryofjustice/hmpps-hardened-container-images"
 LABEL org.opencontainers.image.vendor="Ministry of Justice"
 LABEL hmpps.node.base_variant="24.19.0-alpine3.24"
 LABEL hmpps.node.base_image="node"
