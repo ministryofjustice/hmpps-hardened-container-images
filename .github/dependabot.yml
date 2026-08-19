@@ -27,7 +27,7 @@ updates:
           - "*"
         update-types:
           - "major"
-      github-actions-catch-all: # manual review required: breaking changes possible
+      github-actions-bumps: # manual catch-all for any other github-actions updates that don't match the above groups
         patterns:
           - "*"
 
@@ -47,7 +47,7 @@ updates:
         update-types:
           - "major"
 
-      docker-others: # manual catch-all for any other docker updates that don't match the above groups
+      docker-bumps: # manual catch-all for any other docker updates that don't match the above groups
         patterns:
           - "*"
 
@@ -71,7 +71,7 @@ updates:
           - "*"
         update-types:
           - "major"
-      npm-others: # manual catch-all for any other npm updates that don't match the above groups
+      npm-bumps: # manual catch-all for any other npm updates that don't match the above groups
         patterns:
           - "*"
     schedule:
@@ -95,6 +95,9 @@ updates:
           - "*"
         update-types:
           - "major"
+      pip-bumps: # manual catch-all for any other pip updates that don't match the above groups
+        patterns:
+          - "*"
     schedule:
       interval: "weekly"
     cooldown:
