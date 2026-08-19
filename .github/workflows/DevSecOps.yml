@@ -125,16 +125,6 @@ jobs:
         uses: github/codeql-action/upload-sarif@9ee088e13615f8d1eaef4766f9dde95d3356a8f6
         with:
           sarif_file: results.sarif
-  codeql-actions-check:
-    permissions:
-      contents: read
-      actions: read
-      security-events: write
-    name: Project security CodeQL actions scan
-    uses: ministryofjustice/hmpps-github-actions/.github/workflows/security_codeql_actions.yml@v2 # WORKFLOW_VERSION
-    with:
-      channel_id: ${{ vars.SECURITY_ALERTS_SLACK_CHANNEL_ID || 'NO_SLACK' }}
-    secrets: inherit
 
   release-please:
     runs-on: ubuntu-latest
