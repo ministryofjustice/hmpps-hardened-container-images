@@ -60,8 +60,8 @@ RUN rm -f /usr/local/bin/npm \
     && test ! -e /usr/local/bin/npx \
     && test ! -e /usr/local/bin/corepack
 
-USER appuser
+# USER appuser
 WORKDIR /app
 
-ENTRYPOINT ["node"]
-CMD ["--version"]
+# ENTRYPOINT ["node"]
+# CMD ["--version"]
