@@ -27,8 +27,7 @@ ARG LIBSTDCXX_VERSION=15.2.0-r5
 # renovate: datasource=repology depName=alpine_3_24/tzdata versioning=loose
 ARG TZDATA_VERSION=2026c-r0
 
-RUN apk update --no-cache -qq && \
-    apk upgrade --no-cache && apk add --no-cache \
+RUN apk update --no-cache -qq && apk add --no-cache \
         ca-certificates="${CA_CERTIFICATES_VERSION}" \
         libstdc++="${LIBSTDCXX_VERSION}" \
         tzdata="${TZDATA_VERSION}" && \
@@ -48,9 +47,13 @@ RUN apk update --no-cache -qq && \
 ENV NODE_ENV="production"
 ENV TZ="Europe/London"
 
-RUN rm -f /usr/local/bin/npm \
-    && rm -f /usr/local/bin/npx \
-    && rm -f /usr/local/bin/corepack \
+RUN rm -rf /usr/local/lib/node_modules \
+           /usr/local/bin/npm \
+           /usr/local/bin/npx \
+           /usr/local/bin/corepack \
+           /usr/local/bin/yarn \
+           /usr/local/bin/yarnpkg \
+           /opt/yarn-*
     && ln -snf \
         "/usr/share/zoneinfo/${TZ}" \
         /etc/localtime \
@@ -60,7 +63,10 @@ RUN rm -f /usr/local/bin/npm \
     && test ! -e /usr/local/bin/npx \
     && test ! -e /usr/local/bin/corepack
 
-# USER appuser
+FROM base AS security-upgrades
+RUN apk upgrade --no-cache
+
+USER appuser
 WORKDIR /app
 
 # ENTRYPOINT ["node"]
