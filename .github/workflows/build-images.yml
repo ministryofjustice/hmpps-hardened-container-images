@@ -132,7 +132,8 @@ jobs:
           pull: true
           sbom: ${{ github.ref_type == 'tag' || github.event_name == 'schedule' }}
           provenance: ${{ github.ref_type == 'tag' || github.event_name == 'schedule' }}
-          push: ${{ github.ref_type == 'tag' || github.event_name == 'schedule' }}
+          push: true
+            # ${{ github.ref_type == 'tag' || github.event_name == 'schedule' }}
           load: ${{ !(github.ref_type == 'tag' || github.event_name == 'schedule') }}
           # main/scheduled builds use metadata-action tags and push to GHCR.
           # PR builds use a local-only snyk-scan:* tag (not pushed) for container scanning.
