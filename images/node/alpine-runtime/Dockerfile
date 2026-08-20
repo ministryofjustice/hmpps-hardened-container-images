@@ -50,11 +50,15 @@ ENV TZ="Europe/London"
 
 RUN rm -f /usr/local/bin/npm \
     && rm -f /usr/local/bin/npx \
-    ln -snf \
+    && rm -f /usr/local/bin/corepack \
+    && ln -snf \
         "/usr/share/zoneinfo/${TZ}" \
         /etc/localtime \
     && echo "${TZ}" > /etc/timezone \
-    && node --version
+    && node --version \
+    && test ! -e /usr/local/bin/npm \
+    && test ! -e /usr/local/bin/npx \
+    && test ! -e /usr/local/bin/corepack
 
 USER appuser
 WORKDIR /app
