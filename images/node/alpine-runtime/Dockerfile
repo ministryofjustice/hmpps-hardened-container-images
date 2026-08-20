@@ -48,7 +48,10 @@ RUN apk update --no-cache -qq && \
 ENV NODE_ENV="production"
 ENV TZ="Europe/London"
 
-RUN ln -snf \
+RUN rm -f /usr/local/bin/npm \
+    && rm -f /usr/local/bin/npx \
+    && rm -f /usr/local/bin/corepack \
+    ln -snf \
         "/usr/share/zoneinfo/${TZ}" \
         /etc/localtime \
     && echo "${TZ}" > /etc/timezone \
