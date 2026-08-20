@@ -53,7 +53,7 @@ RUN rm -rf /usr/local/lib/node_modules \
            /usr/local/bin/corepack \
            /usr/local/bin/yarn \
            /usr/local/bin/yarnpkg \
-           /opt/yarn-*
+           /opt/yarn-* \
     && ln -snf \
         "/usr/share/zoneinfo/${TZ}" \
         /etc/localtime \
