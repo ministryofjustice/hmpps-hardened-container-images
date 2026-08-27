@@ -68,7 +68,7 @@ jobs:
 
       - name: Upload SARIF
         if: steps.sarif.outputs.upload == 'true'
-        uses: github/codeql-action/upload-sarif@9ee088e13615f8d1eaef4766f9dde95d3356a8f6
+        uses: github/codeql-action/upload-sarif@4d40c930727a20bd5f499d0d0f5d855d1844040a
         with:
           sarif_file: megalinter-reports/megalinter-report.sarif
   scorecard-analysis:
@@ -122,7 +122,7 @@ jobs:
       # Upload the results to GitHub's code scanning dashboard (optional).
       # Commenting out will disable upload of results to your repo's Code Scanning dashboard
       - name: "Upload to code-scanning"
-        uses: github/codeql-action/upload-sarif@9ee088e13615f8d1eaef4766f9dde95d3356a8f6
+        uses: github/codeql-action/upload-sarif@4d40c930727a20bd5f499d0d0f5d855d1844040a
         with:
           sarif_file: results.sarif
 
