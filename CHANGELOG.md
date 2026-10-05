@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.1.1](https://github.com/ministryofjustice/hmpps-hardened-container-images/compare/v1.1.0...v1.1.1) (2026-08-19)
+
+
+### Bug Fixes
+
+* add codeql action ([e42a74e](https://github.com/ministryofjustice/hmpps-hardened-container-images/commit/e42a74e6c42647a3a82fe3d0be1ee995782ebaca))
+* add codeql action ([22c5440](https://github.com/ministryofjustice/hmpps-hardened-container-images/commit/22c544077ab4e28bcc50f30ea6d6d267ba823bf1))
+* add codeql action ([3c93d03](https://github.com/ministryofjustice/hmpps-hardened-container-images/commit/3c93d03bfcad291b17e676aefce9ef1bc0458bbb))
+* npm and docker labels ([5bfd6fe](https://github.com/ministryofjustice/hmpps-hardened-container-images/commit/5bfd6fe5a1e8b5095967d010b7db5c58f16448ea))
+* pin hmpps-github-shared-actions github actions dep ([#56](https://github.com/ministryofjustice/hmpps-hardened-container-images/issues/56)) ([b79efcb](https://github.com/ministryofjustice/hmpps-hardened-container-images/commit/b79efcb00eef6ed037fca783b54db1c17ba8fe96))
+
 ## [1.1.0](https://github.com/ministryofjustice/hmpps-hardened-container-images/compare/v1.0.2...v1.1.0) (2026-08-19)
 
 

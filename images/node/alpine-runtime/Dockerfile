@@ -27,8 +27,7 @@ ARG LIBSTDCXX_VERSION=15.2.0-r5
 # renovate: datasource=repology depName=alpine_3_24/tzdata versioning=loose
 ARG TZDATA_VERSION=2026c-r0
 
-RUN apk update --no-cache -qq && \
-    apk upgrade --no-cache && apk add --no-cache \
+RUN apk update --no-cache -qq && apk add --no-cache \
         ca-certificates="${CA_CERTIFICATES_VERSION}" \
         libstdc++="${LIBSTDCXX_VERSION}" \
         tzdata="${TZDATA_VERSION}" && \
@@ -60,5 +59,5 @@ RUN ln -snf \
 USER appuser
 WORKDIR /app
 
-ENTRYPOINT ["node"]
-CMD ["--version"]
+# ENTRYPOINT ["node"]
+# CMD ["--version"]
