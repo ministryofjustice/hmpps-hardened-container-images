@@ -3,7 +3,7 @@
 # HMPPS Node.js Runtime Base Image.
 # The digest must resolve to the intended Node 24 Alpine image.
 # Pinned to tag 24.19.0-alpine3.24 via sha.
-FROM node@sha256:bde0dae02f2b12d2bce5ee72b2432f0e511767b7b2dc4dd3b064df11ae422fee AS base
+FROM node@sha256:83f1c388c31fb2e51f7cbd4dea949b96260798c98f206e8e4696bc93bd964e3a AS base
 
 LABEL org.opencontainers.image.title="HMPPS Node.js Runtime Base Image"
 LABEL org.opencontainers.image.description="Runtime-only container image for HMPPS Node.js applications with package managers removed"
@@ -19,13 +19,13 @@ ARG APP_UID=2000
 ARG APP_GID=2000
 
 # renovate: datasource=repology depName=alpine_3_24/ca-certificates versioning=loose
-ARG CA_CERTIFICATES_VERSION=20260611-r0
+ARG CA_CERTIFICATES_VERSION=20260909-r0
 
 # renovate: datasource=repology depName=alpine_3_24/libstdc++
 ARG LIBSTDCXX_VERSION=15.2.0-r5
 
 # renovate: datasource=repology depName=alpine_3_24/tzdata versioning=loose
-ARG TZDATA_VERSION=2026c-r0
+ARG TZDATA_VERSION=2026d-r0
 
 RUN apk update --no-cache -qq && apk add --no-cache \
         ca-certificates="${CA_CERTIFICATES_VERSION}" \
@@ -47,14 +47,8 @@ RUN apk update --no-cache -qq && apk add --no-cache \
 ENV NODE_ENV="production"
 ENV TZ="Europe/London"
 
-RUN rm -rf /usr/local/lib/node_modules \
-           /usr/local/bin/npm \
-           /usr/local/bin/npx \
-           /usr/local/bin/corepack \
-           /usr/local/bin/yarn \
-           /usr/local/bin/yarnpkg \
-           /opt/yarn-* \
-    && ln -snf \
+RUN rm -rf /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack && \
+    ln -snf \
         "/usr/share/zoneinfo/${TZ}" \
         /etc/localtime \
     && echo "${TZ}" > /etc/timezone \
@@ -62,9 +56,6 @@ RUN rm -rf /usr/local/lib/node_modules \
     && test ! -e /usr/local/bin/npm \
     && test ! -e /usr/local/bin/npx \
     && test ! -e /usr/local/bin/corepack
-
-FROM base AS security-upgrades
-RUN apk upgrade --no-cache
 
 USER appuser
 WORKDIR /app
