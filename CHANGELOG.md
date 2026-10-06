@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.1.2](https://github.com/ministryofjustice/hmpps-hardened-container-images/compare/v1.1.1...v1.1.2) (2026-10-06)
+
+
+### Bug Fixes
+
+* patch and fix runtime build ([#65](https://github.com/ministryofjustice/hmpps-hardened-container-images/issues/65)) ([977153f](https://github.com/ministryofjustice/hmpps-hardened-container-images/commit/977153f8de673d1b962b970a8a43cf178e4301aa))
+* runtime node image ([#58](https://github.com/ministryofjustice/hmpps-hardened-container-images/issues/58)) ([5264424](https://github.com/ministryofjustice/hmpps-hardened-container-images/commit/52644243925b61e6e3e028aaa04fa801939da8e5))
+* un-pin tzdata package ([#66](https://github.com/ministryofjustice/hmpps-hardened-container-images/issues/66)) ([00fd429](https://github.com/ministryofjustice/hmpps-hardened-container-images/commit/00fd429d35823a2ad1e77a9e27c266282ae38f9f))
+
 ## [1.1.1](https://github.com/ministryofjustice/hmpps-hardened-container-images/compare/v1.1.0...v1.1.1) (2026-08-19)
 
 
