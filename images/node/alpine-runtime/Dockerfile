@@ -20,7 +20,7 @@ ARG APP_GID=2000
 
 
 # not able to pin tzdata version due to frequent updates and removal of old versions, not updating the apk index for tzdata prior to installation to avoid potential conflicts
-RUN apk add --no-cache tzdata ca-certificates libstdc++
+RUN apk add --no-cache tzdata
 # renovate: datasource=repology depName=alpine_3_24/ca-certificates versioning=loose
 ARG CA_CERTIFICATES_VERSION=20260909-r0
 
