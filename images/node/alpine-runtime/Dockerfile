@@ -18,19 +18,18 @@ FROM base AS runtime
 ARG APP_UID=2000
 ARG APP_GID=2000
 
+
+# not able to pin tzdata version due to frequent updates and removal of old versions, not updating the apk index for tzdata prior to installation to avoid potential conflicts
+RUN apk add --no-cache tzdata
 # renovate: datasource=repology depName=alpine_3_24/ca-certificates versioning=loose
 ARG CA_CERTIFICATES_VERSION=20260909-r0
 
 # renovate: datasource=repology depName=alpine_3_24/libstdc++
 ARG LIBSTDCXX_VERSION=15.2.0-r5
 
-# renovate: datasource=repology depName=alpine_3_24/tzdata versioning=loose
-ARG TZDATA_VERSION=2026d-r0
-
 RUN apk update --no-cache -qq && apk add --no-cache \
         ca-certificates="${CA_CERTIFICATES_VERSION}" \
-        libstdc++="${LIBSTDCXX_VERSION}" \
-        tzdata="${TZDATA_VERSION}" && \
+        libstdc++="${LIBSTDCXX_VERSION}" && \
     addgroup \
         --gid "${APP_GID}" \
         --system \
