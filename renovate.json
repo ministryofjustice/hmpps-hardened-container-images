@@ -1,52 +1,68 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended", "docker:pinDigests", "helpers:pinGitHubActionDigests"],
-  "dependencyDashboard": true,
-  "prHourlyLimit": 0,
-  "prConcurrentLimit": 0,
-  "pre-commit": {
-    "enabled": true
-  },
-  "customManagers": [
-    {
-      "customType": "regex",
-      "managerFilePatterns": ["/^(?:.*\/)?Dockerfile(?:[.][^/]+)?$/"],
-      "matchStrings": [
-        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)(?: versioning=(?<versioning>\\S+))?\\r?\\nARG [A-Z_]+_VERSION=(?<currentValue>\\S+)"
-      ],
-      "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}semver-coerced{{/if}}"
-    }
-  ],
+  "extends": ["github>ministryofjustice/hmpps-renovate-config:node"],
+  "prBodyTemplate": "{{{table}}}{{{notes}}}{{{warnings}}}{{{controls}}}",
   "packageRules": [
     {
-      "description": "Keep container updates within their advertised runtime and OS variants",
-      "matchManagers": ["dockerfile"],
+      "matchManagers": ["npm"],
+      "rangeStrategy": "bump",
+      "minimumReleaseAge": "7 days"
+    },
+    {
+      "matchManagers": ["npm"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "minimumReleaseAge": "7 days"
+    },
+    {
+      "matchDepTypes": ["engines"],
+      "enabled": false,
+      "minimumReleaseAge": "7 days"
+    },
+    {
+      "matchPackageNames": ["typescript", "govuk-frontend"],
+      "rangeStrategy": "bump",
+      "minimumReleaseAge": "7 days"
+    },
+    {
+      "matchManagers": ["npm"],
+      "matchPackageNames": ["@types/node"],
       "matchUpdateTypes": ["major"],
-      "enabled": false
+      "enabled": false,
+      "minimumReleaseAge": "7 days"
     },
     {
-      "description": "Keep the Node 24 images on Node 24",
       "matchDatasources": ["docker"],
-      "matchPackageNames": ["node"],
-      "matchFileNames": ["images/node/alpine/**", "images/node/alpine-runtime/**"],
-      "allowedVersions": "/^24[.-]/"
+      "matchPackageNames": ["node", "hmpps-node"],
+      "matchUpdateTypes": ["major"],
+      "enabled": true,
+      "minimumReleaseAge": "7 days"
     },
     {
-      "description": "Keep the Python 3.13 image on Python 3.13",
+      "matchManagers": ["github-actions","pre-commit"],
+      "matchFileNames": ["**/.github/workflows/**/*.ya?ml"],
+      "enabled": true,
+      "minimumReleaseAge": "7 days"
+    },
+    {
       "matchDatasources": ["docker"],
-      "matchPackageNames": ["ghcr.io/astral-sh/uv"],
-      "allowedVersions": "/^python3\\.13-alpine$/"
+      "matchPackageNames": ["ghcr.io/ministryofjustice/hmpps-node"],
+      "replacementName": "ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-24",
+      "replacementVersion": "v1.0.0",
+      "pinDigests": true
     },
     {
-      "description": "Preserve the npm 12 image contract",
-      "matchDatasources": ["npm"],
-      "matchPackageNames": ["npm"],
-      "allowedVersions": ">=12.0.0 <13.0.0"
+      "matchUpdateTypes": ["minor", "patch", "digest", "pin", "pinDigest", "bump"],
+      "groupName": "routine dependencies",
+      "groupSlug": "routine-dependencies"
     },
     {
-      "description": "Track Alpine package revisions as well as upstream versions",
-      "matchDatasources": ["repology"],
-      "versioning": "loose"
+      "matchUpdateTypes": ["major"],
+      "groupName": null
     }
-  ]
+
+  ],
+  "vulnerabilityAlerts": {
+    "minimumReleaseAge": "7 days"
+  },
+  "platformCommit": "enabled"
 }
