@@ -4,6 +4,10 @@ permissions:
   contents: read
 
 on:
+  push:
+    branches:
+      - 'main'
+
   workflow_call:
     secrets:
       HMPPS_RELEASE_PLEASE_CLIENT_ID:
