@@ -54,7 +54,10 @@
     {
       "matchUpdateTypes": ["minor", "patch", "digest", "pin", "pinDigest", "bump"],
       "groupName": "routine dependencies",
-      "groupSlug": "routine-dependencies"
+      "groupSlug": "routine-dependencies",
+      "minimumReleaseAge": "7 days",
+      "automerge": true,
+      "automergeComment": "Automatically merging routine dependency updates"
     },
     {
       "matchUpdateTypes": ["major"],
@@ -63,7 +66,10 @@
 
   ],
   "vulnerabilityAlerts": {
-    "minimumReleaseAge": "7 days"
+    "minimumReleaseAge": "7 days",
+    "enabled": true,
+    "labels": ["security-fix"]
   },
+  "osvVulnerabilityAlerts": true,
   "platformCommit": "enabled"
 }
