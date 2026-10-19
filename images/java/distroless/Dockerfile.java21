@@ -1,6 +1,6 @@
 # HMPPS Java Base Image (Distroless Java 21)
 # debian:13.6
-FROM debian@sha256:34cd9e9fd437c0a095ec39cb2e73422c9f30821b0d0848ed74fd0d43bae4d958 AS prep
+FROM debian:13.6@sha256:34cd9e9fd437c0a095ec39cb2e73422c9f30821b0d0848ed74fd0d43bae4d958 AS prep
 
 ARG APP_UID=2000
 ARG APP_GID=2000
@@ -14,7 +14,7 @@ RUN chown appuser:appgroup /home/appuser/.postgresql/root.crt && \
     chmod 0644 /home/appuser/.postgresql/root.crt
 
 # gcr.io/distroless/java21-debian13:nonroot
-FROM gcr.io/distroless/java21-debian13@sha256:27d6932e85923aa9baf382f3daed5a587fe764c4c5397a0fa085a3f1b8f637ec AS runtime
+FROM gcr.io/distroless/java21-debian13:nonroot@sha256:27d6932e85923aa9baf382f3daed5a587fe764c4c5397a0fa085a3f1b8f637ec AS runtime
 
 ARG APP_UID=2000
 ARG APP_GID=2000

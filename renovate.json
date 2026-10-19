@@ -1,0 +1,52 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", "docker:pinDigests", "helpers:pinGitHubActionDigests"],
+  "dependencyDashboard": true,
+  "prHourlyLimit": 0,
+  "prConcurrentLimit": 0,
+  "pre-commit": {
+    "enabled": true
+  },
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^(?:.*\/)?Dockerfile(?:[.][^/]+)?$/"],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)(?: versioning=(?<versioning>\\S+))?\\r?\\nARG [A-Z_]+_VERSION=(?<currentValue>\\S+)"
+      ],
+      "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}semver-coerced{{/if}}"
+    }
+  ],
+  "packageRules": [
+    {
+      "description": "Keep container updates within their advertised runtime and OS variants",
+      "matchManagers": ["dockerfile"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    },
+    {
+      "description": "Keep the Node 24 images on Node 24",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["node"],
+      "matchFileNames": ["images/node/alpine/**", "images/node/alpine-runtime/**"],
+      "allowedVersions": "/^24[.-]/"
+    },
+    {
+      "description": "Keep the Python 3.13 image on Python 3.13",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["ghcr.io/astral-sh/uv"],
+      "allowedVersions": "/^python3\\.13-alpine$/"
+    },
+    {
+      "description": "Preserve the npm 12 image contract",
+      "matchDatasources": ["npm"],
+      "matchPackageNames": ["npm"],
+      "allowedVersions": ">=12.0.0 <13.0.0"
+    },
+    {
+      "description": "Track Alpine package revisions as well as upstream versions",
+      "matchDatasources": ["repology"],
+      "versioning": "loose"
+    }
+  ]
+}
