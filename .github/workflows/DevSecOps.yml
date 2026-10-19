@@ -42,7 +42,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-      - uses: oxsecurity/megalinter@15e5b45552097e318c93de385779ce3b1084052c
+      - uses: oxsecurity/megalinter@9949bad031045f366be2467e00e8371a7328a2e2
         env:
           SARIF_REPORTER: true
           ENABLE_LINTERS: >
@@ -138,7 +138,7 @@ jobs:
     steps:
       - name: Generate GitHub App token
         id: app-token
-        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510
         with:
           client-id: ${{ secrets.HMPPS_RELEASE_PLEASE_CLIENT_ID }}
           private-key: ${{ secrets.HMPPS_RELEASE_PLEASE_KEY }}
