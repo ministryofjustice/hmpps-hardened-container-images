@@ -36,12 +36,14 @@
       "matchPackageNames": ["node", "hmpps-node"],
       "matchUpdateTypes": ["major"],
       "enabled": true,
+      "pinDigests": true,
       "minimumReleaseAge": "7 days"
     },
     {
       "matchManagers": ["github-actions","pre-commit"],
       "matchFileNames": ["**/.github/workflows/**/*.ya?ml"],
       "enabled": true,
+      "pinDigests": true,
       "minimumReleaseAge": "7 days"
     },
     {
@@ -55,12 +57,14 @@
       "matchUpdateTypes": ["minor", "patch", "digest", "pin", "pinDigest", "bump"],
       "groupName": "routine dependencies",
       "groupSlug": "routine-dependencies",
+      "pinDigests": true,
       "minimumReleaseAge": "7 days",
       "automerge": true,
       "automergeComment": "Automatically merging routine dependency updates"
     },
     {
       "matchUpdateTypes": ["major"],
+      "pinDigests": true,
       "groupName": null
     }
 
