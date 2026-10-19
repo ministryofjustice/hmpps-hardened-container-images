@@ -3,7 +3,7 @@
 # HMPPS Node.js Runtime Base Image.
 # The digest must resolve to the intended Node 24 Alpine image.
 # Pinned to tag node:24-alpine3.24 via sha.
-FROM node@sha256:429bdfbc204b4eabc6438e6d34e4e9d8dd2ca1df8289bcd78cdd3c5db387b7a5 AS base
+FROM node:24-alpine3.24@sha256:429bdfbc204b4eabc6438e6d34e4e9d8dd2ca1df8289bcd78cdd3c5db387b7a5 AS base
 
 LABEL org.opencontainers.image.title="HMPPS Node.js Runtime Base Image"
 LABEL org.opencontainers.image.description="Runtime-only container image for HMPPS Node.js applications with package managers removed"
@@ -24,7 +24,7 @@ RUN apk add --no-cache tzdata
 # renovate: datasource=repology depName=alpine_3_24/ca-certificates versioning=loose
 ARG CA_CERTIFICATES_VERSION=20260909-r0
 
-# renovate: datasource=repology depName=alpine_3_24/libstdc++
+# renovate: datasource=repology depName=alpine_3_24/libstdc++ versioning=loose
 ARG LIBSTDCXX_VERSION=15.2.0-r5
 
 RUN apk update --no-cache -qq && apk add --no-cache \

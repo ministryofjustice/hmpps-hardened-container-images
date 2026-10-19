@@ -1,6 +1,6 @@
 # HMPPS Node.js Base Image
 # Pinned to tag node:24-alpine3.24 via sha.
-FROM node@sha256:429bdfbc204b4eabc6438e6d34e4e9d8dd2ca1df8289bcd78cdd3c5db387b7a5 AS base
+FROM node:24-alpine3.24@sha256:429bdfbc204b4eabc6438e6d34e4e9d8dd2ca1df8289bcd78cdd3c5db387b7a5 AS base
 
 # Metadata
 LABEL org.opencontainers.image.title="HMPPS Node.js Base Image"

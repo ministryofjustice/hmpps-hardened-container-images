@@ -55,6 +55,41 @@ These images are automatically built, scanned, and published to GitHub Container
 
 ---
 
+## Dependency Updates
+
+Enable the Renovate GitHub App for this repository to activate `renovate.json`.
+Renovate opens pull requests for Docker base-image tags and digests, GitHub Actions,
+pre-commit hooks, and annotated Dockerfile package versions. Updates require review
+and CI; automatic merging is not enabled. The Dependency Dashboard tracks pending
+updates and lookup failures.
+
+Keep an explicit tag alongside each base-image digest so Renovate follows the
+intended runtime and operating-system variant rather than `latest`. Container
+major-version upgrades are disabled to preserve the published image contracts;
+Node Alpine stays on Node 24, Python stays on 3.13, and the npm 12 variant stays
+on npm 12. New runtime majors should be introduced deliberately as new variants.
+
+For a pinned package argument, put its lookup metadata immediately above the ARG:
+
+```dockerfile
+# renovate: datasource=npm depName=npm
+ARG NPM_VERSION=12.2.0
+
+# renovate: datasource=repology depName=alpine_3_24/libstdc++ versioning=loose
+ARG LIBSTDCXX_VERSION=15.2.0-r5
+```
+
+Keep Alpine package annotations aligned with the Alpine release in the base-image
+tag. npm installs use the registry's integrity verification rather than a separate
+hard-coded checksum that would become stale on version updates. Unpinned OS
+packages (including tzdata) are resolved during builds, not by Renovate. Existing
+`apk upgrade` and `apt-get upgrade` stages still apply available OS patches when
+rebuilt; this configuration does not schedule rebuilds by itself.
+
+Dependabot remains configured independently and may open overlapping update PRs.
+
+---
+
 ## Supported Platforms
 
 All published container images support:
