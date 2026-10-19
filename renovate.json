@@ -1,6 +1,9 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["github>ministryofjustice/hmpps-renovate-config:node"],
+  "extends": [
+    "github>ministryofjustice/hmpps-renovate-config:node",
+    "helpers:pinGitHubActionDigests"
+  ],
   "prBodyTemplate": "{{{table}}}{{{notes}}}{{{warnings}}}{{{controls}}}",
   "dependencyDashboard": true,
   "packageRules": [
@@ -40,10 +43,11 @@
       "minimumReleaseAge": "7 days"
     },
     {
-      "matchManagers": ["github-actions","pre-commit"],
+      "matchManagers": ["github-actions"],
+      "matchDepTypes": ["workflow"],
       "matchFileNames": ["**/.github/workflows/**/*.ya?ml"],
       "enabled": true,
-      "pinDigests": true,
+      "pinDigests": false,
       "minimumReleaseAge": "7 days"
     },
     {
