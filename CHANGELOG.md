@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.4](https://github.com/ministryofjustice/hmpps-hardened-container-images/compare/v1.1.3...v1.1.4) (2026-10-19)
+
+
+### Bug Fixes
+
+* renovate config ([#92](https://github.com/ministryofjustice/hmpps-hardened-container-images/issues/92)) ([b578425](https://github.com/ministryofjustice/hmpps-hardened-container-images/commit/b578425e61985dcc63d2f07fad0ced8f095a7b7a))
+
 ## [1.1.3](https://github.com/ministryofjustice/hmpps-hardened-container-images/compare/v1.1.2...v1.1.3) (2026-10-19)
 
 
