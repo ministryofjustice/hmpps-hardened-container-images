@@ -59,5 +59,4 @@ RUN rm -rf /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack && \
 USER appuser
 WORKDIR /app
 
-# ENTRYPOINT ["node"]
-# CMD ["--version"]
+ENTRYPOINT ["node"]
