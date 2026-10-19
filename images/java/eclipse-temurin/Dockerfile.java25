@@ -1,6 +1,6 @@
 # HMPPS Java Base Image (Eclipse Temurin Java 25)
 # eclipse-temurin:25-jre-jammy
-FROM eclipse-temurin:25-jre-jammy@sha256:c42fecf62f32725c65cfea284c012526d6fb31cc78123c740ebdc1cfd2dced12 AS base
+FROM eclipse-temurin:25-jre-jammy@sha256:e0d8c47eccd7ec82d635542dfcd1f2b1293add6bdd7ffbeb650f8ec1b1335425 AS base
 
 # Metadata
 LABEL org.opencontainers.image.title="HMPPS Java Base Image (Java 25)"
