@@ -24,20 +24,24 @@ RUN ln -snf /usr/share/zoneinfo/${TZ} /etc/localtime && echo ${TZ} > /etc/timezo
 # Security upgrades in separate stage for cache control
 # Build with: docker buildx build --no-cache-filter=security-upgrades ...
 FROM base AS security-upgrades
-# renovate: datasource=npm depName=npm
-ARG NPM_VERSION=12.2.0
-# NPM upgrade can be reverted when the default version gets bumps in the base
-RUN npm install -g npm@${NPM_VERSION} && \
+COPY npm12/package.json npm12/package-lock.json /opt/npm-cli/
+RUN npm ci --prefix /opt/npm-cli --omit=dev --ignore-scripts --no-audit --no-fund && \
+    rm -rf /usr/local/lib/node_modules/npm && \
+    ln -sf /opt/npm-cli/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm && \
+    ln -sf /opt/npm-cli/node_modules/npm/bin/npx-cli.js /usr/local/bin/npx && \
     npm cache clean --force && \
-    find /usr/local/lib/node_modules -name "*.md" -delete && \
-    find /usr/local/lib/node_modules -name "*.txt" -delete && \
-    find /usr/local/lib/node_modules -name "CHANGELOG*" -delete && \
-    find /usr/local/lib/node_modules -name "*.ts" ! -name "*.d.ts" -delete && \
-    find /usr/local/lib/node_modules -name "*.map" -delete && \
-    find /usr/local/lib/node_modules -type d -name "test" -exec rm -rf {} + 2>/dev/null; \
-    find /usr/local/lib/node_modules -type d -name "tests" -exec rm -rf {} + 2>/dev/null; \
-    find /usr/local/lib/node_modules -type d -name "__tests__" -exec rm -rf {} + 2>/dev/null; \
-    find /usr/local/lib/node_modules -type d -name "docs" -exec rm -rf {} + 2>/dev/null; \
+    test "$(npm --version)" = "$(node -p "require('/opt/npm-cli/package.json').dependencies.npm")" && \
+    npx --version
+
+RUN find /usr/local/lib/node_modules /opt/npm-cli/node_modules -name "*.md" -delete && \
+    find /usr/local/lib/node_modules /opt/npm-cli/node_modules -name "*.txt" -delete && \
+    find /usr/local/lib/node_modules /opt/npm-cli/node_modules -name "CHANGELOG*" -delete && \
+    find /usr/local/lib/node_modules /opt/npm-cli/node_modules -name "*.ts" ! -name "*.d.ts" -delete && \
+    find /usr/local/lib/node_modules /opt/npm-cli/node_modules -name "*.map" -delete && \
+    find /usr/local/lib/node_modules /opt/npm-cli/node_modules -type d -name "test" -exec rm -rf {} + 2>/dev/null; \
+    find /usr/local/lib/node_modules /opt/npm-cli/node_modules -type d -name "tests" -exec rm -rf {} + 2>/dev/null; \
+    find /usr/local/lib/node_modules /opt/npm-cli/node_modules -type d -name "__tests__" -exec rm -rf {} + 2>/dev/null; \
+    find /usr/local/lib/node_modules /opt/npm-cli/node_modules -type d -name "docs" -exec rm -rf {} + 2>/dev/null; \
     true && \
     apk update -qq --no-cache && \
     apk upgrade --no-cache

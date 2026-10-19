@@ -62,6 +62,23 @@ CMD ["npm", "start"]
 - To switch Node version, pick the matching published tag.
 - Use `24-alpine-runtime` for the final stage of multi-stage builds — npm/yarn are not needed at runtime and their removal reduces the attack surface.
 
+## npm 12 Build Variant
+
+`alpine/Dockerfile.node24-npm12` installs npm from the committed manifest and
+lockfile in `alpine/npm12` using `npm ci`. The lockfile records the npm tarball's
+SHA-512 integrity hash, and Renovate can update the dependency and lockfile
+together. Keep the lockfile committed; do not generate it during the image build.
+
+The installed CLI lives in `/opt/npm-cli/node_modules/npm`, with `npm` and `npx`
+linked from `/usr/local/bin`. Global installs still use `/usr/local`, and the
+original npm copy from the base image is removed.
+
+Build this variant with `images/node/alpine` as the context:
+
+```bash
+docker build -f images/node/alpine/Dockerfile.node24-npm12 images/node/alpine
+```
+
 ## Usage (multi-stage)
 
 ```dockerfile

@@ -1,0 +1,7 @@
+{
+  "name": "hmpps-node24-npm12",
+  "private": true,
+  "dependencies": {
+    "npm": "12.2.0"
+  }
+}
