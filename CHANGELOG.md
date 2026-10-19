@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.3](https://github.com/ministryofjustice/hmpps-hardened-container-images/compare/v1.1.2...v1.1.3) (2026-10-19)
+
+
+### Bug Fixes
+
+* patch alpine images and add renovate ([#67](https://github.com/ministryofjustice/hmpps-hardened-container-images/issues/67)) ([96729c1](https://github.com/ministryofjustice/hmpps-hardened-container-images/commit/96729c1e2e34295b7606f0408873143d92ae096a))
+
 ## [1.1.2](https://github.com/ministryofjustice/hmpps-hardened-container-images/compare/v1.1.1...v1.1.2) (2026-10-06)
 
 
