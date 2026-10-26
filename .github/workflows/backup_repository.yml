@@ -11,7 +11,7 @@ permissions:
 jobs:
   backup:
     name: Backup to SharePoint
-    uses: ministryofjustice/hmpps-github-actions/.github/workflows/backup_repository.yml@5a12a2662d25541ffc73af81fb3232b3c4196f93
+    uses: ministryofjustice/hmpps-github-actions/.github/workflows/backup_repository.yml@2f477d94de98edf4c481ff948624118c3fc93e5a
     with:
       retention_count: 5 # optional, defaults to 5
     secrets:
