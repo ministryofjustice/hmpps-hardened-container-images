@@ -147,7 +147,7 @@ jobs:
 
       - name: Snyk scan
         id: snyk-scan
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/snyk-scan@2848496f6e2f4144b17fd3f23519c851789e4b87
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/snyk-scan@38a8e31c789777d02669f8b2de309d66ebf00f55
         with:
           subproject: ${{ matrix.dockerfile }}
           severity: high
