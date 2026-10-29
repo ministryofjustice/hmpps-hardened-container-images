@@ -22,7 +22,7 @@ node-flavour:
 	@set -e; \
 	if [ "$(FLAVOUR)" = build ]; then \
 		test -f "$(SCANNER_BUILD_DIR)/keys/melange.rsa" || melange keygen "$(SCANNER_BUILD_DIR)/keys/melange.rsa"; \
-		MELANGE_EXTRA_CA_CERTS="$(SCANNER_CA_CERTIFICATE)" melange build \
+		MELANGE_EXTRA_CA_CERTS="$(SCANNER_CA_CERTIFICATE)" bash scripts/quiet-build.sh "$(NODE_FLAVOUR_BUILD_DIR)/output/melange.log" melange build \
 			--runner docker --arch "$(ARCH)" \
 			--cache-dir "$(SCANNER_BUILD_DIR)/cache" \
 			--apk-cache-dir "$(SCANNER_BUILD_DIR)/apk-cache" \
@@ -35,7 +35,7 @@ node-flavour:
 			--keyring-append "$(SCANNER_BUILD_DIR)/keys/melange.rsa.pub" \
 			--package-append "hmpps-npm$(NPM_MAJOR)=$$version-r0"; \
 	else set --; fi; \
-	apko build --arch "$(ARCH)" --build-date "$(TIMESTAMP)" \
+	bash scripts/quiet-build.sh "$(NODE_FLAVOUR_BUILD_DIR)/output/apko.log" apko build --arch "$(ARCH)" --build-date "$(TIMESTAMP)" \
 		--sbom-path "$(NODE_FLAVOUR_BUILD_DIR)/output" "$$@" \
 		"$(NODE_FLAVOUR_BUILD_DIR)/output/apko.yaml" \
 		"$(NODE_FLAVOUR_IMAGE)" "$(NODE_FLAVOUR_BUILD_DIR)/output/image.tar"; \
@@ -45,7 +45,7 @@ node-flavour:
 scanners:
 	mkdir -p "$(SCANNER_BUILD_DIR)/keys" "$(SCANNER_BUILD_DIR)/source" "$(SCANNER_BUILD_DIR)/cache" "$(SCANNER_BUILD_DIR)/apk-cache" "$(SCANNER_BUILD_DIR)/packages" "$(SCANNER_BUILD_DIR)/output"
 	@test -f "$(SCANNER_BUILD_DIR)/keys/melange.rsa" || melange keygen "$(SCANNER_BUILD_DIR)/keys/melange.rsa"
-	MELANGE_EXTRA_CA_CERTS="$(SCANNER_CA_CERTIFICATE)" melange build \
+	MELANGE_EXTRA_CA_CERTS="$(SCANNER_CA_CERTIFICATE)" bash scripts/quiet-build.sh "$(SCANNER_BUILD_DIR)/output/melange.log" melange build \
 		--runner docker --arch "$(ARCH)" \
 		--cache-dir "$(SCANNER_BUILD_DIR)/cache" \
   		--ca-certificate-append /tmp/hmpps-scanners/moj-root.crt \
@@ -54,7 +54,7 @@ scanners:
 		--signing-key "$(SCANNER_BUILD_DIR)/keys/melange.rsa" \
 		--out-dir "$(SCANNER_BUILD_DIR)/packages" \
 		images/node/alpine-runtime/melange.scanners.yaml && \
-	apko build --build-date "$(TIMESTAMP)" --arch "$(ARCH)" \
+	bash scripts/quiet-build.sh "$(SCANNER_BUILD_DIR)/output/apko.log" apko build --build-date "$(TIMESTAMP)" --arch "$(ARCH)" \
 		--build-repository-append "$(SCANNER_BUILD_DIR)/packages" \
 		--keyring-append "$(SCANNER_BUILD_DIR)/keys/melange.rsa.pub" \
 		--package-append hmpps-node-scanners=1.0.0-r3 \
@@ -68,7 +68,7 @@ scanners:
 apko:
 	mkdir -p /tmp/hmpps-node-output && \
 	ruby scripts/render-node-apko.rb "$(NODE_MAJOR)" runtime /tmp/hmpps-node-output/apko.yaml && \
-	apko build --arch $(ARCH) --sbom-path /tmp/hmpps-node-output --build-date $(TIMESTAMP) /tmp/hmpps-node-output/apko.yaml $(IMAGE) /tmp/hmpps-node-output/hmpps-node-runtime.tar  && \
+	bash scripts/quiet-build.sh /tmp/hmpps-node-output/apko.log apko build --arch $(ARCH) --sbom-path /tmp/hmpps-node-output --build-date $(TIMESTAMP) /tmp/hmpps-node-output/apko.yaml $(IMAGE) /tmp/hmpps-node-output/hmpps-node-runtime.tar  && \
 	docker load --input /tmp/hmpps-node-output/hmpps-node-runtime.tar && \
 	docker tag $(IMAGE)-$(ARCH) runtime:local-$(ARCH)-$(TAG_TIMESTAMP) && \
 	docker run --rm runtime:local-$(ARCH)-$(TAG_TIMESTAMP) --version

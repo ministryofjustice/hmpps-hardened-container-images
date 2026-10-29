@@ -93,6 +93,35 @@ their Melange recipes. Updates require review
 and CI; automatic merging is not enabled. The Dependency Dashboard tracks pending
 updates and lookup failures.
 
+Custom regex managers cover pinned CA/libstdc++ packages in apko and Melange
+YAML, npm 11/12 recipe versions, and the five scanner release sources. Node major
+constraints and the explicitly required Go 1.27.2 compiler remain unchanged.
+Unpinned Alpine packages are refreshed by rebuilds, not version-only Renovate edits.
+Apko/Melange updates are grouped into reviewable PRs with automerge disabled.
+
+The [Melange synchronization workflow](.github/workflows/sync-melange.yml) handles
+same-repository `renovate[bot]` PRs on `renovate/` branches. It runs the synchronizer
+from the trusted base commit, downloads changed release archives over verified
+HTTPS, checks npm archives against registry SHA-512 integrity, and updates:
+
+- Melange SHA-256/SHA-512 checksums.
+- Scanner linker versions, runtime assertions and documentation.
+- Scanner package epochs and workflow/Makefile APK pins.
+- npm package versions and corresponding workflow/Makefile pins.
+
+Configure the repository secret **`MELANGE_SYNC_TOKEN`** with a token restricted
+to this repository and **Contents, Workflows and Actions write** permissions.
+Workflows write is necessary because the synchronized pins include the build
+workflow; Actions write allows an explicit validation dispatch. Classic PATs
+require suitable `repo` and `workflow` scopes instead. Organization approval and
+branch rules may also apply. No credentials are passed to dependency archives.
+The workflow must exist on the PR base before it can synchronize updates.
+Other bot identities/branch prefixes are intentionally not authorized.
+The branch is committed and a build is dispatched; no updates are auto-merged.
+Missing credentials, checksum mismatches and unsupported source changes fail
+explicitly. Snyk's separate npm build-tool version remains tied to its upstream
+engine requirement rather than following the runtime npm recipe.
+
 Keep an explicit tag alongside each base-image digest so Renovate follows the
 intended runtime and operating-system variant rather than `latest`. Container
 major-version upgrades are disabled to preserve the published image contracts;

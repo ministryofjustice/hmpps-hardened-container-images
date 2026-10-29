@@ -1,0 +1,66 @@
+name: Synchronize Renovate Melange updates
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - images/**/melange*.yaml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: melange-sync-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    if: >-
+      github.actor == 'renovate[bot]' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      startsWith(github.head_ref, 'renovate/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out trusted base
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+      - name: Retain trusted synchronizer
+        run: cp scripts/sync-melange.rb "$RUNNER_TEMP/sync-melange.rb"
+      - name: Verify synchronization credentials
+        env:
+          SYNC_TOKEN: ${{ secrets.MELANGE_SYNC_TOKEN }}
+        run: |
+          if [ -z "$SYNC_TOKEN" ]; then
+            echo "::error::Set MELANGE_SYNC_TOKEN with repository Contents, Workflows and Actions write access."
+            exit 1
+          fi
+      - name: Check out Renovate head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+          token: ${{ secrets.MELANGE_SYNC_TOKEN }}
+      - name: Refresh verified downloads and dependent pins
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: ruby "$RUNNER_TEMP/sync-melange.rb" "$BASE_SHA"
+      - name: Commit synchronized pins and request validation
+        env:
+          GH_TOKEN: ${{ secrets.MELANGE_SYNC_TOKEN }}
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          git add images/node/alpine/melange.npm11.yaml images/node/alpine/melange.npm12.yaml \
+            images/node/alpine-runtime/melange.scanners.yaml Makefile \
+            .github/workflows/build-images.yml images/node/README.md
+          if git diff --cached --quiet; then
+            echo "Melange checksums and pins already synchronized."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "build: synchronize Melange checksums and package pins" \
+            -m "Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>"
+          git push origin "HEAD:$HEAD_REF"
+          # Explicitly validate the synchronized branch even if its PR build is filtered.
+          gh workflow run build-images.yml --ref "$HEAD_REF"

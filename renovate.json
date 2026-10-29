@@ -7,19 +7,37 @@
   "customManagers": [
     {
       "customType": "regex",
-      "fileMatch": ["^images/node/alpine-runtime/apko\\.yaml$"],
-      "matchStrings": ["ca-certificates(?:-bundle)?=(?<currentValue>[^\\s]+)"],
+      "managerFilePatterns": ["/^images\\/.*\\/(?:apko|melange[^/]*)\\.ya?ml$/"],
+      "matchStrings": ["(?:^|\\n)[ \\t]*-[ \\t]+ca-certificates(?:-bundle)?=(?<currentValue>[^\\s]+)"],
       "datasourceTemplate": "repology",
       "depNameTemplate": "alpine_3_24/ca-certificates",
       "versioningTemplate": "loose"
     },
     {
       "customType": "regex",
-      "fileMatch": ["^images/node/alpine-runtime/apko\\.yaml$"],
-      "matchStrings": ["libstd\\+\\+=(?<currentValue>[^\\s]+)"],
+      "managerFilePatterns": ["/^images\\/.*\\/(?:apko|melange[^/]*)\\.ya?ml$/"],
+      "matchStrings": ["(?:^|\\n)[ \\t]*-[ \\t]+libstd\\+\\+=(?<currentValue>[^\\s]+)"],
       "datasourceTemplate": "repology",
       "depNameTemplate": "alpine_3_24/libstd++",
       "versioningTemplate": "loose"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^images\\/node\\/alpine\\/melange\\.npm(?:11|12)\\.yaml$/"],
+      "matchStrings": ["\\n  version: (?<currentValue>\\d+\\.\\d+\\.\\d+)\\n"],
+      "datasourceTemplate": "npm",
+      "depNameTemplate": "npm",
+      "versioningTemplate": "semver"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^images\\/.*\\/melange[^/]*\\.ya?ml$/"],
+      "matchStrings": [
+        "https://codeload\\.github\\.com/(?<depName>[^/\\s]+/[^/\\s]+)/tar\\.gz/refs/tags/(?<currentValue>v\\d+\\.\\d+\\.\\d+)",
+        "https://github\\.com/(?<depName>hadolint/hadolint)/releases/download/(?<currentValue>v\\d+\\.\\d+\\.\\d+)/"
+      ],
+      "datasourceTemplate": "github-tags",
+      "versioningTemplate": "semver"
     }
   ],
   "prBodyTemplate": "{{{table}}}{{{notes}}}{{{warnings}}}{{{controls}}}",
@@ -94,6 +112,24 @@
       "matchUpdateTypes": ["major"],
       "pinDigests": true,
       "groupName": null
+    },
+    {
+      "matchManagers": ["custom.regex"],
+      "matchFileNames": ["images/**/apko.y*ml", "images/**/melange*.y*ml"],
+      "automerge": false,
+      "groupName": "apko and melange dependencies"
+    },
+    {
+      "matchManagers": ["custom.regex"],
+      "matchFileNames": ["images/node/alpine/melange.npm11.yaml"],
+      "matchPackageNames": ["npm"],
+      "allowedVersions": ">=11.0.0 <12.0.0"
+    },
+    {
+      "matchManagers": ["custom.regex"],
+      "matchFileNames": ["images/node/alpine/melange.npm12.yaml"],
+      "matchPackageNames": ["npm"],
+      "allowedVersions": ">=12.0.0 <13.0.0"
     }
 
   ],

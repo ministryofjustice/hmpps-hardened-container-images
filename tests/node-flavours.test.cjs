@@ -90,7 +90,7 @@ test('rendering keeps shared trust/accounts and isolates all five flavour contra
 
 test('workflow covers matching Docker/apko pairs with correctly pinned npm APKs', () => {
   const workflow = JSON.parse(execFileSync('ruby', [
-    '-ryaml', '-rjson', '-e', 'puts JSON.generate(YAML.load_file(ARGV[0]))', '.github/workflows/build-images.yml',
+    '-ryaml', '-rjson', '-e', 'puts JSON.generate(YAML.safe_load(File.read(ARGV[0]), aliases: true))', '.github/workflows/build-images.yml',
   ]));
   const matrix = workflow.jobs['build-scan-push'].strategy.matrix.include;
   const comparisons = matrix.filter(entry => entry.comparison);
@@ -104,7 +104,7 @@ test('workflow covers matching Docker/apko pairs with correctly pinned npm APKs'
     ]));
     assert.equal(entry.melange_package, `${recipe.package.name}=${recipe.package.version}-r${recipe.package.epoch}`);
   }
-  const scanner = matrix.find(entry => entry.scanners);
+  const scanner = workflow.jobs['publish-scanners'].strategy.matrix.include.find(entry => entry.scanners);
   assert.ok(scanner);
   assert.equal(scanner.flavour, undefined);
   assert.equal(scanner.comparison, undefined);

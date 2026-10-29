@@ -131,6 +131,25 @@ backends use the existing pinned shared Snyk action, at threshold `low`.
 Run configuration/report/tagging tests with
 `node --test tests/node-flavours.test.cjs tests/image-reference.test.cjs`.
 
+### Build logging and dependency maintenance
+
+CI and Make targets use [quiet-build.sh](../../scripts/quiet-build.sh) to keep
+apko/Melange output out of the main console on success. A failure retains its
+original exit code and prints the last 200 lines. CI uploads full logs as
+`build-logs-<type>-<flavour>` artifacts, including failed builds. Local logs are
+in the target's output directory (`apko.log` and `melange.log`); inspect those for
+full diagnostics. Logging detail is retained in files, not discarded with a
+higher minimum log level. CI also restores runner ownership before caching
+Melange's root-owned files to avoid noisy cache-save permission failures.
+
+Renovate updates apko package pins and Melange release versions; a dedicated
+workflow synchronizes source checksums, scanner metadata and package pins.
+See [dependency maintenance setup](../../README.md#dependency-updates), including
+the required synchronization token. npm remains on its existing 11/12 track,
+Node constraints remain on 24/26, and the Go 1.27.2 compiler is not upgraded.
+Run maintenance tests with `ruby tests/melange-sync_test.rb` and
+`node --test tests/build-maintenance.test.cjs`.
+
 ### Scanner runtime flavour
 
 CI also publishes
@@ -249,7 +268,14 @@ and compiled Go packages. `--apk-cache-dir` separately retains Alpine package
 downloads for the build environment. CI restores and saves these caches with
 `actions/cache`, including after failed compilation so completed downloads and
 compilation work are retained. Go separates cached outputs by their build inputs and target
-architecture. The first build still downloads and compiles dependencies; later
+architecture. CI compiles scanner APKs in parallel on native `ubuntu-24.04`
+(AMD64) and `ubuntu-24.04-arm` (ARM64) runners, without QEMU. Each architecture
+has its own compilation cache, reused across recipe updates where Go's input
+hashes still match. Only signed APKs and public keys are passed to the image
+publication job; private signing keys stay on their build runner. Other image
+builds and the Node comparison report do not wait for scanner compilation.
+Native build logs are uploaded as `build-logs-native-scanners-<architecture>`.
+The first build still downloads and compiles dependencies; later
 builds can reuse that work. Do not start duplicate builds to accelerate an
 existing build or delete its cache while it is running.
 Melange still assembles and signs an APK on every invocation; Go reuses unchanged

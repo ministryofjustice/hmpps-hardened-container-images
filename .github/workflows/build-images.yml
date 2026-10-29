@@ -27,7 +27,8 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '24'
-      - run: node --test tests/node-flavours.test.cjs tests/image-reference.test.cjs
+      - run: node --test tests/node-flavours.test.cjs tests/image-reference.test.cjs tests/build-maintenance.test.cjs
+      - run: ruby tests/melange-sync_test.rb
   # DevSecOps:
   #   uses: ./.github/workflows/DevSecOps.yml
   #   secrets:
@@ -52,6 +53,7 @@ jobs:
         include:
           - image_type: java-temurin
             image_variant: 21-docker
+            scanners: false
             context: images/java/eclipse-temurin
             dockerfile: images/java/eclipse-temurin/Dockerfile.java21
           - image_type: java-temurin
@@ -149,13 +151,6 @@ jobs:
             backend: apko
             node_major: '26'
             flavour: runtime
-          - image_type: node-alpine-runtime
-            image_variant: 24-scanners-apko
-            context: images/node/alpine-runtime
-            apko_config: images/node/alpine-runtime/apko.yaml
-            melange_config: images/node/alpine-runtime/melange.scanners.yaml
-            melange_package: hmpps-node-scanners=1.0.0-r3
-            scanners: true
           - image_type: node-distroless
             image_variant: 24-docker
             context: images/node/distroless
@@ -168,7 +163,7 @@ jobs:
       packages: write
       security-events: write
 
-    steps:
+    steps: &image-build-steps
       - name: Check out the repo
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -239,7 +234,7 @@ jobs:
 
       - name: Cache Melange sources and compilation
         id: scanner-cache
-        if: ${{ matrix.melange_config }}
+        if: ${{ matrix.melange_config && !matrix.scanners }}
         uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
           path: ${{ runner.temp }}/scanner-cache
@@ -247,36 +242,29 @@ jobs:
           restore-keys: |
             melange-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles(matrix.melange_config) }}-
 
+      - name: Download native scanner APKs and public signing keys
+        if: ${{ matrix.scanners }}
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          pattern: scanner-apks-*
+          path: ${{ runner.temp }}
+          merge-multiple: true
+
       - name: Build signed Melange APKs
-        if: ${{ matrix.melange_config }}
+        if: ${{ matrix.melange_config && !matrix.scanners }}
         env:
           MELANGE_CONFIG: ${{ matrix.melange_config }}
+        run: bash scripts/build-melange.sh
+
+      - name: Restore runner ownership of Melange cache files
+        if: ${{ always() && matrix.melange_config && !matrix.scanners }}
         run: |
-          mkdir -p "$RUNNER_TEMP/scanner-keys" "$RUNNER_TEMP/scanner-source" "$RUNNER_TEMP/scanner-packages" "$RUNNER_TEMP/scanner-cache/apk"
-          docker run --rm \
-            --volume "$RUNNER_TEMP/scanner-keys:/keys" \
-            cgr.dev/chainguard/melange@sha256:7939f64319d3e6de871fbb58c0c8d0e1966951a254c4b4f91286147ce79b19a4 \
-            keygen /keys/melange.rsa
-          for arch in x86_64 aarch64; do
-          docker run --rm --privileged \
-            --volume "$GITHUB_WORKSPACE:/work:ro" \
-            --volume "$RUNNER_TEMP/scanner-keys:/keys:ro" \
-            --volume "$RUNNER_TEMP/scanner-source:/source:ro" \
-            --volume "$RUNNER_TEMP/scanner-packages:/packages" \
-            --volume "$RUNNER_TEMP/scanner-cache:/cache" \
-            --workdir /work \
-            cgr.dev/chainguard/melange@sha256:7939f64319d3e6de871fbb58c0c8d0e1966951a254c4b4f91286147ce79b19a4 \
-            build --arch "$arch" \
-            --cache-dir /cache \
-            --apk-cache-dir /cache/apk \
-            --source-dir /source \
-            --signing-key /keys/melange.rsa \
-            --out-dir /packages \
-            "$MELANGE_CONFIG"
-          done
+          if [ -d "$RUNNER_TEMP/scanner-cache" ]; then
+            sudo chown -R "$(id -u):$(id -g)" "$RUNNER_TEMP/scanner-cache"
+          fi
 
       - name: Save scanner download and compilation caches
-        if: ${{ always() && matrix.melange_config && steps.scanner-cache.outcome == 'success' }}
+        if: ${{ always() && matrix.melange_config && !matrix.scanners && steps.scanner-cache.outcome == 'success' }}
         uses: actions/cache/save@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
           path: ${{ runner.temp }}/scanner-cache
@@ -307,10 +295,14 @@ jobs:
             extra_mounts+=(--volume "$RUNNER_TEMP/scanner-keys:/keys:ro")
             extra_mounts+=(--volume "$RUNNER_TEMP/scanner-packages:/packages:ro")
             extra_args+=(--build-repository-append /packages)
-            extra_args+=(--keyring-append /keys/melange.rsa.pub)
+            for key in "$RUNNER_TEMP/scanner-keys/"*.pub; do
+              test -f "$key"
+              extra_args+=(--keyring-append "/keys/$(basename "$key")")
+            done
             extra_args+=(--package-append "$MELANGE_PACKAGE")
           fi
           if [ -n "$COMPARISON" ] || [ "$SCANNERS" = true ]; then
+            bash scripts/quiet-build.sh "$RUNNER_TEMP/build-logs/apko-build.log" \
             docker run --rm \
               "${extra_mounts[@]}" \
               --volume "$GITHUB_WORKSPACE:/work:ro" \
@@ -353,6 +345,7 @@ jobs:
                 test -s /tmp/snyk-container-help
               '
           fi
+          bash scripts/quiet-build.sh "$RUNNER_TEMP/build-logs/apko-publish.log" \
           docker run --rm \
             "${extra_mounts[@]}" \
             --volume "$GITHUB_WORKSPACE:/work" \
@@ -367,6 +360,14 @@ jobs:
             "${extra_args[@]}" \
             "$APKO_CONFIG" \
             "$APKO_IMAGE_REF"
+
+      - name: Upload full apko and Melange logs
+        if: ${{ always() && matrix.apko_config }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: build-logs-${{ matrix.image_type }}-${{ matrix.image_variant }}
+          path: ${{ runner.temp }}/build-logs/*.log
+          if-no-files-found: warn
 
       - name: Prepare same-run AMD64 comparison image
         id: comparison-image
@@ -432,6 +433,99 @@ jobs:
       #     scan_context: image-${{ github.ref_name }}
       #     image_ref: ${{ steps.snyk_image.outputs.image_ref }}
       #     summary: ${{ steps.snyk-scan.outputs.summary }}
+
+  build-native-scanners:
+    name: Compile scanners (${{ matrix.arch }}, native)
+    needs: test-node-flavours
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x86_64
+            runner: ubuntu-24.04
+          - arch: aarch64
+            runner: ubuntu-24.04-arm
+    env:
+      MELANGE_CONFIG: images/node/alpine-runtime/melange.scanners.yaml
+      MELANGE_ARCHES: ${{ matrix.arch }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Restore native compilation cache
+        id: cache
+        uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: ${{ runner.temp }}/scanner-cache
+          key: native-scanners-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('scripts/build-melange.sh', 'images/node/alpine-runtime/melange.scanners.yaml') }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            native-scanners-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('scripts/build-melange.sh', 'images/node/alpine-runtime/melange.scanners.yaml') }}-
+            native-scanners-v1-${{ runner.os }}-${{ runner.arch }}-
+      - name: Build signed scanner APK on native hardware
+        run: |
+          case "${{ runner.arch }}:$MELANGE_ARCHES" in
+            X64:x86_64|ARM64:aarch64) ;;
+            *) echo "::error::Scanner runner does not match target architecture"; exit 1 ;;
+          esac
+          bash scripts/build-melange.sh
+          mv "$RUNNER_TEMP/scanner-keys/melange.rsa.pub" \
+            "$RUNNER_TEMP/scanner-keys/melange-${MELANGE_ARCHES}.rsa.pub"
+      - name: Upload signed APK and public key
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: scanner-apks-${{ matrix.arch }}
+          path: |
+            ${{ runner.temp }}/scanner-packages/${{ matrix.arch }}/
+            ${{ runner.temp }}/scanner-keys/*.pub
+          if-no-files-found: error
+          retention-days: 1
+      - name: Restore runner ownership of native cache
+        if: ${{ always() }}
+        run: |
+          if [ -d "$RUNNER_TEMP/scanner-cache" ]; then
+            sudo chown -R "$(id -u):$(id -g)" "$RUNNER_TEMP/scanner-cache"
+          fi
+      - name: Save native compilation cache
+        if: ${{ always() && steps.cache.outcome == 'success' }}
+        uses: actions/cache/save@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: ${{ runner.temp }}/scanner-cache
+          key: ${{ steps.cache.outputs.cache-primary-key }}
+      - name: Upload native compilation log
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: build-logs-native-scanners-${{ matrix.arch }}
+          path: ${{ runner.temp }}/build-logs/*.log
+          if-no-files-found: warn
+
+  publish-scanners:
+    name: Build-Scan-Push (${{ matrix.image_type }}, ${{ matrix.image_variant }})
+    needs: build-native-scanners
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      packages: write
+      security-events: write
+    env:
+      SNYK_TOKEN: ${{ secrets.HMPPS_SNYK_API_KEY }}
+    strategy:
+      matrix:
+        include:
+          - image_type: node-alpine-runtime
+            image_variant: 24-scanners-apko
+            context: images/node/alpine-runtime
+            apko_config: images/node/alpine-runtime/apko.yaml
+            melange_config: images/node/alpine-runtime/melange.scanners.yaml
+            melange_package: hmpps-node-scanners=1.0.0-r3
+            scanners: true
+            dockerfile: ''
+            node_major: ''
+            npm_major: ''
+            flavour: ''
+            comparison: ''
+            backend: apko
+    steps: *image-build-steps
 
   compare-node-images:
     name: Compare Docker and apko/Melange Node images

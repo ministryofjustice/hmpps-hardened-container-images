@@ -32,9 +32,9 @@ test('rejects invalid coordinates and overlong tags explicitly', () => {
 test('all enabled matrix entries have unique grouped coordinates and documented references', () => {
   const fs = require('node:fs');
   const workflow = JSON.parse(execFileSync('ruby', [
-    '-ryaml', '-rjson', '-e', 'puts JSON.generate(YAML.load_file(ARGV[0]))', '.github/workflows/build-images.yml',
+    '-ryaml', '-rjson', '-e', 'puts JSON.generate(YAML.safe_load(File.read(ARGV[0]), aliases: true))', '.github/workflows/build-images.yml',
   ]));
-  const entries = workflow.jobs['build-scan-push'].strategy.matrix.include;
+  const entries = ['build-scan-push', 'publish-scanners'].flatMap(job => workflow.jobs[job].strategy.matrix.include);
   const references = entries.map(entry => imageReference({
     ...base, type: entry.image_type, variant: entry.image_variant,
   }));
