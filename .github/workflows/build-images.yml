@@ -127,13 +127,13 @@ jobs:
             comparison: runtime-24
             backend: docker
             node_major: '24'
-          # - image_type: node-alpine-runtime
-          #   image_variant: 26-docker
-          #   context: images/node/alpine-runtime
-          #   dockerfile: images/node/alpine-runtime/Dockerfile.node26
-          #   comparison: runtime-26
-          #   backend: docker
-          #   node_major: '26'
+          - image_type: node-alpine-runtime
+            image_variant: 26-docker
+            context: images/node/alpine-runtime
+            dockerfile: images/node/alpine-runtime/Dockerfile.node26
+            comparison: runtime-26
+            backend: docker
+            node_major: '26'
           - image_type: node-alpine-runtime
             image_variant: 24-apko
             context: images/node/alpine-runtime
@@ -142,13 +142,13 @@ jobs:
             backend: apko
             node_major: '24'
             flavour: runtime
-          # - image_type: node-alpine-runtime
-          #   image_variant: 26-apko
-          #   apko_config: images/node/alpine-runtime/apko.yaml
-          #   comparison: runtime-26
-          #   backend: apko
-          #   node_major: '26'
-          #   flavour: runtime
+          - image_type: node-alpine-runtime
+            image_variant: 26-apko
+            apko_config: images/node/alpine-runtime/apko.yaml
+            comparison: runtime-26
+            backend: apko
+            node_major: '26'
+            flavour: runtime
           - image_type: node-alpine-runtime
             image_variant: 24-scanners-apko
             context: images/node/alpine-runtime
