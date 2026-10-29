@@ -4,14 +4,14 @@ contents:
     - https://dl-cdn.alpinelinux.org/alpine/v3.24/community
     - https://dl-cdn.alpinelinux.org/alpine/edge/community
   packages:
-    # - go=1.27.2-r0
     - alpine-release
     - apk-tools
     - nodejs~24
     - ca-certificates=20261020-r0
     - ca-certificates-bundle=20261020-r0
-    - libstdc++=15.2.0-r5
     - tzdata
+
+
 
 certificates:
   additional:

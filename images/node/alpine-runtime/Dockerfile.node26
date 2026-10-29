@@ -1,0 +1,20 @@
+# syntax=docker/dockerfile:1
+FROM ghcr.io/ministryofjustice/devcontainer-base:4.2.1 AS ca
+FROM node:26-alpine3.24@sha256:c6ad9e9c1d80f6eb607c26b4b0a132ff7a2344fad1c78ea3baa2a7d4c8de6d94
+COPY --from=ca /usr/local/share/ca-certificates/moj-root.crt /usr/local/share/ca-certificates/moj-root.crt
+RUN cat /usr/local/share/ca-certificates/moj-root.crt >> /etc/ssl/certs/ca-certificates.crt
+ENV NODE_EXTRA_CA_CERTS=/usr/local/share/ca-certificates/moj-root.crt
+
+LABEL org.opencontainers.image.title="HMPPS Node.js 26 Docker Runtime Baseline"
+LABEL org.opencontainers.image.description="Docker runtime baseline with Node package managers removed; apk retained"
+LABEL org.opencontainers.image.source="https://github.com/ministryofjustice/hmpps-hardened-container-images"
+
+RUN apk upgrade --no-cache && apk add --no-cache tzdata ca-certificates && \
+    addgroup -g 2000 -S appgroup && adduser -u 2000 -S appuser -G appgroup && \
+    rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx \
+      /usr/local/bin/corepack /usr/local/bin/yarn /usr/local/bin/yarnpkg /opt/yarn-*
+ENV NODE_ENV="production" TZ="Europe/London"
+RUN ln -snf "/usr/share/zoneinfo/${TZ}" /etc/localtime && echo "${TZ}" > /etc/timezone
+USER appuser
+WORKDIR /app
+ENTRYPOINT ["node"]

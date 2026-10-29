@@ -5,7 +5,7 @@
 # Pinned to tag node:24-alpine3.24 via sha.
 FROM ghcr.io/ministryofjustice/devcontainer-base:4.2.1 AS ca
 
-FROM node:24-alpine3.24 AS base
+FROM node:24-alpine AS base
 
 LABEL org.opencontainers.image.title="HMPPS Node.js Runtime Base Image"
 LABEL org.opencontainers.image.description="Runtime-only container image for HMPPS Node.js applications with package managers removed"
@@ -26,13 +26,15 @@ ARG APP_GID=2000
 COPY  --from=ca /usr/local/share/ca-certificates/moj-root.crt /usr/local/share/ca-certificates/moj-root.crt
 
 RUN cp /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt.backup && cat /usr/local/share/ca-certificates/moj-root.crt >> /etc/ssl/certs/ca-certificates.crt
-RUN apk add --no-cache tzdata
+RUN apk add --no-cache tzdata expat>=2.8.5-r0
 # renovate: datasource=repology depName=alpine_3_24/ca-certificates versioning=loose
 ARG CA_CERTIFICATES_VERSION=20261020-r0
 
 # renovate: datasource=repology depName=alpine_3_24/libstdc++ versioning=loose
 ARG LIBSTDCXX_VERSION=15.2.0-r5
-RUN apk update --no-cache -qq && apk add --no-cache \
+RUN apk update --no-cache -qq && \
+   apk upgrade --no-cache -qq && \
+   apk add --no-cache \
         ca-certificates="${CA_CERTIFICATES_VERSION}" \
         libstdc++="${LIBSTDCXX_VERSION}" && \
     addgroup \
@@ -50,7 +52,13 @@ RUN apk update --no-cache -qq && apk add --no-cache \
 
 ENV NODE_ENV="production"
 ENV TZ="Europe/London"
-
+RUN rm -rf /usr/local/lib/node_modules/npm \
+           /usr/local/bin/npm \
+           /usr/local/bin/npx \
+           /usr/local/bin/corepack \
+           /usr/local/bin/yarn \
+           /usr/local/bin/yarnpkg \
+           /opt/yarn-*
 RUN rm -rf /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack && \
     ln -snf \
         "/usr/share/zoneinfo/${TZ}" \
@@ -60,6 +68,9 @@ RUN rm -rf /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack && \
     && test ! -e /usr/local/bin/npm \
     && test ! -e /usr/local/bin/npx \
     && test ! -e /usr/local/bin/corepack
+
+FROM base AS security-upgrades
+
 
 USER appuser
 WORKDIR /app

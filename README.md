@@ -42,9 +42,22 @@ These images are automatically built, scanned, and published to GitHub Container
 | Image | Description |
 |---------|-------------|
 | `ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-24` | Alpine Node.js 24 |
+| `ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-24-npm12` | Docker Node.js 24/npm 12 build baseline with apk |
+| `ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-26-npm12` | Docker Node.js 26/npm 12 build baseline with apk |
+| `ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-build-24-npm11-apko` | Apko Node.js 24 build image with Melange-packaged npm 11 and apk |
+| `ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-build-24-npm12-apko` | Apko Node.js 24 build image with Melange-packaged npm 12 and apk |
+| `ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-build-26-npm12-apko` | Apko Node.js 26 build image with Melange-packaged npm 12 and apk |
 | `ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-runtime-24` | Alpine runtime image with npm, yarn and corepack removed |
-| `ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-runtime-24-apko` | Separately published apko variant with Alpine Node 24, Go and apk |
+| `ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-runtime-26` | Docker Node.js 26 runtime baseline; apk retained |
+| `ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-runtime-24-apko` | Apko Node.js 24 runtime without any package managers |
+| `ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-runtime-26-apko` | Apko Node.js 26 runtime without any package managers |
+| `ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-runtime-24-apko-scanners` | Apko Node runtime with Scorecard, Conftest, Betterleaks, Hadolint and Snyk; no Go toolchain |
 | `ghcr.io/ministryofjustice/hmpps-hardened-distroless-node-24` | Distroless Node.js 24 |
+
+See [Node flavours and comparison reports](images/node/README.md) for local builds
+and pipeline measurements of vulnerabilities, image size, build duration, versions
+and package-manager presence. The existing Docker Node 24 runtime is unchanged;
+the apko Node 24 runtime now excludes apk. The scanner flavour remains separate.
 
 ---
 
@@ -62,9 +75,11 @@ Enable the Renovate GitHub App for this repository to activate `renovate.json`.
 Renovate opens pull requests for Docker base-image tags and digests, GitHub Actions,
 pre-commit hooks, annotated Dockerfile package versions, and pinned package versions
 in the Node Alpine runtime apko config. The separately published apko variant uses Alpine's
-prebuilt `nodejs` package constrained to major version 24, and is
-assembled with apko from Alpine 3.24 and edge/community packages using
-`images/node/alpine-runtime/apko.yaml`. Updates require review
+prebuilt `nodejs~24` or `nodejs-current~26` packages, and build/runtime configs are
+rendered from `images/node/alpine-runtime/apko.yaml` using only Alpine 3.24
+main/community. The scanner flavour retains its existing edge repository for
+the pinned build-only Go compiler. npm 11/12 distributions are checksum-pinned in
+their Melange recipes. Updates require review
 and CI; automatic merging is not enabled. The Dependency Dashboard tracks pending
 updates and lookup failures.
 

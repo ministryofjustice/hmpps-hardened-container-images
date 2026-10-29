@@ -1,0 +1,31 @@
+package:
+  name: hmpps-npm12
+  version: 12.2.0
+  epoch: 0
+  description: npm 12 and npx for Node.js build images
+  copyright:
+    - license: Artistic-2.0
+  dependencies:
+    runtime:
+      - nodejs
+environment:
+  contents:
+    repositories:
+      - https://dl-cdn.alpinelinux.org/alpine/v3.24/main
+    packages:
+      - busybox
+      - ca-certificates-bundle
+pipeline:
+  - runs: mkdir -p npm-source
+  - uses: fetch
+    with:
+      uri: https://registry.npmjs.org/npm/-/npm-${{package.version}}.tgz
+      expected-sha512: 66c2632a94e796649738b2d7894d710c2cc2e1696893823066687f6b0d8a52e5f2b54eeaeaa32ffdc513ecca1e49ff794a5c2ec3f9515d879f1b3182b291cf35
+      directory: npm-source
+  - runs: |
+      dest="${{targets.destdir}}"
+      mkdir -p "$dest/usr/lib/node_modules/npm" "$dest/usr/bin" "$dest/usr/share/licenses/npm"
+      cp -a npm-source/. "$dest/usr/lib/node_modules/npm/"
+      ln -s ../lib/node_modules/npm/bin/npm-cli.js "$dest/usr/bin/npm"
+      ln -s ../lib/node_modules/npm/bin/npx-cli.js "$dest/usr/bin/npx"
+      cp npm-source/LICENSE "$dest/usr/share/licenses/npm/LICENSE"

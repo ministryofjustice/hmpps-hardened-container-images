@@ -19,6 +19,15 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  test-node-flavours:
+    name: Test Node flavour configuration and comparison
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+      - run: node --test tests/node-flavours.test.cjs
   DevSecOps:
     uses: ./.github/workflows/DevSecOps.yml
     secrets:
@@ -30,10 +39,11 @@ jobs:
       id-token: write
       contents: read
   build-scan-push:
+    needs: test-node-flavours
     # needs: DevSecOps
     name: Build-Scan-Push
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: ${{ matrix.melange_config && 60 || 30 }}
     env:
       SNYK_TOKEN: ${{ secrets.HMPPS_SNYK_API_KEY }}
     strategy:
@@ -65,14 +75,86 @@ jobs:
             dockerfile: images/node/alpine/Dockerfile.node24-npm11
             tag_prefix: ''
             publish_latest: false
+            comparison: build-24-npm11
+            backend: docker
+            node_major: '24'
+            npm_major: '11'
+          - image_name: hardened-alpine-node-24-npm12
+            context: images/node/alpine
+            dockerfile: images/node/alpine/Dockerfile.node24-npm12
+            comparison: build-24-npm12
+            backend: docker
+            node_major: '24'
+            npm_major: '12'
+          - image_name: hardened-alpine-node-26-npm12
+            context: images/node/alpine
+            dockerfile: images/node/alpine/Dockerfile.node26-npm12
+            comparison: build-26-npm12
+            backend: docker
+            node_major: '26'
+            npm_major: '12'
+          - image_name: hardened-alpine-node-build-24-npm11-apko
+            apko_config: images/node/alpine-runtime/apko.yaml
+            melange_config: images/node/alpine/melange.npm11.yaml
+            melange_package: hmpps-npm11=11.12.1-r0
+            comparison: build-24-npm11
+            backend: apko
+            node_major: '24'
+            npm_major: '11'
+            flavour: build
+          - image_name: hardened-alpine-node-build-24-npm12-apko
+            apko_config: images/node/alpine-runtime/apko.yaml
+            melange_config: images/node/alpine/melange.npm12.yaml
+            melange_package: hmpps-npm12=12.2.0-r0
+            comparison: build-24-npm12
+            backend: apko
+            node_major: '24'
+            npm_major: '12'
+            flavour: build
+          - image_name: hardened-alpine-node-build-26-npm12-apko
+            apko_config: images/node/alpine-runtime/apko.yaml
+            melange_config: images/node/alpine/melange.npm12.yaml
+            melange_package: hmpps-npm12=12.2.0-r0
+            comparison: build-26-npm12
+            backend: apko
+            node_major: '26'
+            npm_major: '12'
+            flavour: build
           - image_name: hardened-alpine-node-runtime-24
             context: images/node/alpine-runtime
             dockerfile: images/node/alpine-runtime/Dockerfile
             tag_prefix: ''
             publish_latest: true
+            comparison: runtime-24
+            backend: docker
+            node_major: '24'
+          - image_name: hardened-alpine-node-runtime-26
+            context: images/node/alpine-runtime
+            dockerfile: images/node/alpine-runtime/Dockerfile.node26
+            comparison: runtime-26
+            backend: docker
+            node_major: '26'
           - image_name: hardened-alpine-node-runtime-24-apko
             context: images/node/alpine-runtime
             apko_config: images/node/alpine-runtime/apko.yaml
+            tag_prefix: ''
+            publish_latest: true
+            comparison: runtime-24
+            backend: apko
+            node_major: '24'
+            flavour: runtime
+          - image_name: hardened-alpine-node-runtime-26-apko
+            apko_config: images/node/alpine-runtime/apko.yaml
+            comparison: runtime-26
+            backend: apko
+            node_major: '26'
+            flavour: runtime
+          - image_name: hardened-alpine-node-runtime-24-apko-scanners
+            context: images/node/alpine-runtime
+            apko_config: images/node/alpine-runtime/apko.yaml
+            melange_config: images/node/alpine-runtime/melange.scanners.yaml
+            melange_package: hmpps-node-scanners=1.0.0-r3
+            scanners: true
             tag_prefix: ''
             publish_latest: true
           - image_name: hardened-distroless-node-24
@@ -125,22 +207,31 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Start build timing and render Node flavour
+        id: build-start
+        env:
+          NODE_MAJOR: ${{ matrix.node_major }}
+          FLAVOUR: ${{ matrix.flavour }}
+        run: |
+          echo "epoch=$(date +%s)" >> "$GITHUB_OUTPUT"
+          if [ -n "$FLAVOUR" ]; then
+            ruby scripts/render-node-apko.rb "$NODE_MAJOR" "$FLAVOUR" node-flavour.apko.yaml
+          fi
+
       - name: Build and push container image
         if: ${{ !matrix.apko_config }}
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: ./${{ matrix.context }}
           file: ./${{ matrix.dockerfile }}
-          # tag/scheduled builds publish multi-arch images and push to GHCR;
-          # main and PR builds stay amd64-only and are loaded locally for Snyk scanning
-          # (buildx --load does not support multi-platform manifests).
-          platforms: ${{ (github.ref_type == 'tag' || github.event_name == 'schedule') && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
+          # Comparison pairs both build AMD64/ARM64; metrics inspect AMD64 only.
+          platforms: ${{ (matrix.comparison || github.ref_type == 'tag' || github.event_name == 'schedule') && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
           pull: true
           sbom: ${{ github.ref_type == 'tag' || github.event_name == 'schedule' }}
           provenance: ${{ github.ref_type == 'tag' || github.event_name == 'schedule' }}
           push: true
             # ${{ github.ref_type == 'tag' || github.event_name == 'schedule' }}
-          load: ${{ !(github.ref_type == 'tag' || github.event_name == 'schedule') }}
+          load: ${{ !matrix.comparison && !(github.ref_type == 'tag' || github.event_name == 'schedule') }}
           # main/scheduled builds use metadata-action tags and push to GHCR.
           # PR builds use a local-only snyk-scan:* tag (not pushed) for container scanning.
           tags: |
@@ -150,19 +241,117 @@ jobs:
           cache-to: type=gha,mode=max
           no-cache-filters: security-upgrades
 
+      - name: Cache Melange sources and compilation
+        id: scanner-cache
+        if: ${{ matrix.melange_config }}
+        uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: ${{ runner.temp }}/scanner-cache
+          key: melange-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles(matrix.melange_config) }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            melange-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles(matrix.melange_config) }}-
+
+      - name: Build signed Melange APKs
+        if: ${{ matrix.melange_config }}
+        env:
+          MELANGE_CONFIG: ${{ matrix.melange_config }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/scanner-keys" "$RUNNER_TEMP/scanner-source" "$RUNNER_TEMP/scanner-packages" "$RUNNER_TEMP/scanner-cache/apk"
+          docker run --rm \
+            --volume "$RUNNER_TEMP/scanner-keys:/keys" \
+            cgr.dev/chainguard/melange@sha256:7939f64319d3e6de871fbb58c0c8d0e1966951a254c4b4f91286147ce79b19a4 \
+            keygen /keys/melange.rsa
+          for arch in x86_64 aarch64; do
+          docker run --rm --privileged \
+            --volume "$GITHUB_WORKSPACE:/work:ro" \
+            --volume "$RUNNER_TEMP/scanner-keys:/keys:ro" \
+            --volume "$RUNNER_TEMP/scanner-source:/source:ro" \
+            --volume "$RUNNER_TEMP/scanner-packages:/packages" \
+            --volume "$RUNNER_TEMP/scanner-cache:/cache" \
+            --workdir /work \
+            cgr.dev/chainguard/melange@sha256:7939f64319d3e6de871fbb58c0c8d0e1966951a254c4b4f91286147ce79b19a4 \
+            build --arch "$arch" \
+            --cache-dir /cache \
+            --apk-cache-dir /cache/apk \
+            --source-dir /source \
+            --signing-key /keys/melange.rsa \
+            --out-dir /packages \
+            "$MELANGE_CONFIG"
+          done
+
+      - name: Save scanner download and compilation caches
+        if: ${{ always() && matrix.melange_config && steps.scanner-cache.outcome == 'success' }}
+        uses: actions/cache/save@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: ${{ runner.temp }}/scanner-cache
+          key: ${{ steps.scanner-cache.outputs.cache-primary-key }}
+
       - name: Build and push apko image
         if: ${{ matrix.apko_config }}
         env:
-          APKO_CONFIG: ${{ matrix.apko_config }}
+          APKO_CONFIG: ${{ matrix.flavour && 'node-flavour.apko.yaml' || matrix.apko_config }}
           APKO_IMAGE_REF: ${{ steps.snyk_image.outputs.image_ref }}
-          APKO_ARCHES: 'x86_64,arm64,amd64'
+          APKO_ARCHES: 'x86_64,aarch64'
+          MELANGE_CONFIG: ${{ matrix.melange_config }}
+          MELANGE_PACKAGE: ${{ matrix.melange_package }}
+          SCANNERS: ${{ matrix.scanners }}
+          COMPARISON: ${{ matrix.comparison }}
         run: |
           if [ ! -f "$GITHUB_WORKSPACE/$APKO_CONFIG" ]; then
             echo "::error file=$APKO_CONFIG::Apko configuration is missing from the checkout. Ensure it is committed."
             exit 1
           fi
           mkdir -p "$RUNNER_TEMP/apko-sbom"
+          extra_mounts=()
+          extra_args=()
+          if [ -n "$MELANGE_CONFIG" ]; then
+            extra_mounts+=(--volume "$RUNNER_TEMP/scanner-keys:/keys:ro")
+            extra_mounts+=(--volume "$RUNNER_TEMP/scanner-packages:/packages:ro")
+            extra_args+=(--build-repository-append /packages)
+            extra_args+=(--keyring-append /keys/melange.rsa.pub)
+            extra_args+=(--package-append "$MELANGE_PACKAGE")
+          fi
+          if [ -n "$COMPARISON" ] || [ "$SCANNERS" = true ]; then
+            docker run --rm \
+              "${extra_mounts[@]}" \
+              --volume "$GITHUB_WORKSPACE:/work:ro" \
+              --volume "$RUNNER_TEMP/apko-sbom:/sbom" \
+              --workdir /work \
+              cgr.dev/chainguard/apko@sha256:20ac78c9ccfd679a31a5c4e7c93b5861504ca0768d2ad60cc7fadb5933f7db37 \
+              build --arch x86_64 --sbom-path /sbom \
+              "${extra_args[@]}" \
+              "$APKO_CONFIG" hmpps-scanners:test /sbom/scanners.tar
+            docker load --input "$RUNNER_TEMP/apko-sbom/scanners.tar"
+          fi
+          if [ "$SCANNERS" = true ]; then
+            docker run --rm --entrypoint /bin/sh hmpps-scanners:test-amd64 -ec '
+              scorecard version | grep v5.6.0
+              conftest --version | grep 0.71.1
+              betterleaks version | grep 1.9.0
+              hadolint --version | grep 2.15.1
+              test "$(snyk --version)" = 1.1308.0-oss
+              node --version
+              for tool in go gcc npm npx; do
+                if command -v "$tool"; then
+                  echo "Unexpected build-only or excluded tool: $tool" >&2
+                  exit 1
+                fi
+              done
+            '
+            docker run --rm --user 2000:2000 --env HOME=/tmp/snyk-home \
+              --entrypoint /bin/sh hmpps-scanners:test-amd64 -ec '
+                mkdir -p "$HOME"
+                test "$(snyk --version)" = 1.1308.0-oss
+                snyk --help > /tmp/snyk-help
+                test -s /tmp/snyk-help
+                snyk test --help > /tmp/snyk-test-help
+                test -s /tmp/snyk-test-help
+                snyk container --help > /tmp/snyk-container-help
+                test -s /tmp/snyk-container-help
+              '
+          fi
           docker run --rm \
+            "${extra_mounts[@]}" \
             --volume "$GITHUB_WORKSPACE:/work" \
             --volume "$RUNNER_TEMP/apko-sbom:/sbom" \
             --volume "$HOME/.docker/config.json:/root/.docker/config.json:ro" \
@@ -171,21 +360,61 @@ jobs:
             publish \
             --arch "$APKO_ARCHES" \
             --sbom-path /sbom \
+            "${extra_args[@]}" \
             "$APKO_CONFIG" \
             "$APKO_IMAGE_REF"
+
+      - name: Prepare same-run AMD64 comparison image
+        id: comparison-image
+        if: ${{ matrix.comparison }}
+        env:
+          BACKEND: ${{ matrix.backend }}
+          IMAGE_REF: ${{ steps.snyk_image.outputs.image_ref }}
+          START_EPOCH: ${{ steps.build-start.outputs.epoch }}
+        run: |
+          if [ "$BACKEND" = apko ]; then
+            docker tag hmpps-scanners:test-amd64 hmpps-comparison:test
+          else
+            if ! docker image inspect "$IMAGE_REF" > /dev/null 2>&1; then
+              docker pull --platform linux/amd64 "$IMAGE_REF"
+            fi
+            docker tag "$IMAGE_REF" hmpps-comparison:test
+          fi
+          echo "seconds=$(($(date +%s) - START_EPOCH))" >> "$GITHUB_OUTPUT"
 
       - name: Snyk scan
         id: snyk-scan
         uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/snyk-scan@2848496f6e2f4144b17fd3f23519c851789e4b87
         with:
-          subproject: ${{ matrix.dockerfile || matrix.apko_config }}
-          severity: high
+          subproject: ${{ matrix.melange_config || matrix.dockerfile || matrix.apko_config }}
+          severity: ${{ matrix.comparison && 'low' || 'high' }}
           scan_type: image
           location: '.'
           snyk_policy_path: ''
           github_token: ${{ secrets.GITHUB_TOKEN }}
           snyk_token: ${{ secrets.HMPPS_SNYK_API_KEY }}
-          image_ref: ${{ steps.snyk_image.outputs.image_ref }}
+          image_ref: ${{ matrix.comparison && 'hmpps-comparison:test' || steps.snyk_image.outputs.image_ref }}
+
+      - name: Collect image comparison metrics
+        if: ${{ always() && matrix.comparison && steps.comparison-image.outcome == 'success' }}
+        env:
+          IMAGE_REF: hmpps-comparison:test
+          COMPARISON: ${{ matrix.comparison }}
+          BACKEND: ${{ matrix.backend }}
+          NODE_MAJOR: ${{ matrix.node_major }}
+          NPM_MAJOR: ${{ matrix.npm_major }}
+          BUILD_SECONDS: ${{ steps.comparison-image.outputs.seconds }}
+          SCAN_STATUS: ${{ github.actor == 'dependabot[bot]' && 'skipped' || steps.snyk-scan.outcome }}
+          OUTPUT_DIR: ${{ runner.temp }}/node-metrics
+        run: node scripts/node-image-metrics.cjs collect
+
+      - name: Upload image comparison metrics
+        if: ${{ always() && matrix.comparison && steps.comparison-image.outcome == 'success' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: node-metrics-${{ matrix.comparison }}-${{ matrix.backend }}
+          path: ${{ runner.temp }}/node-metrics/*.json
+          if-no-files-found: error
 
       # - name: Snyk slack notification
       #   uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/slack_snyk_scan_notification@35bb5e74a025299cddf50909c1968444d966c1dc
@@ -199,3 +428,28 @@ jobs:
       #     scan_context: image-${{ github.ref_name }}
       #     image_ref: ${{ steps.snyk_image.outputs.image_ref }}
       #     summary: ${{ steps.snyk-scan.outputs.summary }}
+
+  compare-node-images:
+    name: Compare Docker and apko/Melange Node images
+    needs: build-scan-push
+    if: ${{ always() && !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          pattern: node-metrics-*
+          path: node-metrics
+          merge-multiple: true
+      - name: Write side-by-side comparison
+        run: |
+          mkdir -p node-metrics
+          node scripts/node-image-metrics.cjs summary node-metrics > node-image-comparison.md
+          cat node-image-comparison.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: node-image-comparison
+          path: |
+            node-image-comparison.md
+            node-metrics/*.json
+          if-no-files-found: error

@@ -22,83 +22,240 @@ The distroless variant uses Google's minimal distroless base image, reducing att
 
 ## Features
 
-- Node.js 24 variants for Alpine and distroless runtimes
+- Node.js 24 and 26 Alpine build/runtime flavours; Node.js 24 distroless runtime
 - Non‑root user `appuser` (UID/GID 2000) and `WORKDIR /app`
 - Timezone: `Europe/London`
 - The Alpine runtime-only variant is assembled declaratively with apko from Alpine 3.24 packages
 - Dockerfile-built Alpine variants apply `apk upgrade --no-cache`; the apko runtime declares its packages and versions
 - OCI labels: `hmpps.node.base_image`, `hmpps.node.base_variant`, `org.opencontainers.image.base.name`
 
-## Building the Alpine Runtime Image
+## Alpine build and runtime flavours
 
-CI builds the Dockerfile runtime as
-`ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-runtime-24` and publishes
-the apko variant separately as
-`ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-runtime-24-apko`.
-Both use the workflow's branch or release tag and run through Snyk scanning.
-Release-tag builds include AMD64 and ARM64; other builds use AMD64.
+All names below have the prefix `ghcr.io/ministryofjustice/hmpps-` and use the
+workflow's branch or release tag.
 
-Install the native apko CLI and ensure Docker is available:
+| Flavour | apko/Melange image suffix | Docker comparison image suffix | Package managers in apko image |
+|---------|--------------------------|--------------------------------|-------------------------------|
+| Node 24, npm 11.12.1 | `hardened-alpine-node-build-24-npm11-apko` | `hardened-alpine-node-24` | npm, npx, apk |
+| Node 24, npm 12.2.0 | `hardened-alpine-node-build-24-npm12-apko` | `hardened-alpine-node-24-npm12` | npm, npx, apk |
+| Node 26, npm 12.2.0 | `hardened-alpine-node-build-26-npm12-apko` | `hardened-alpine-node-26-npm12` | npm, npx, apk |
+| Node 24 runtime | `hardened-alpine-node-runtime-24-apko` | `hardened-alpine-node-runtime-24` | none |
+| Node 26 runtime | `hardened-alpine-node-runtime-26-apko` | `hardened-alpine-node-runtime-26` | none |
+
+There is deliberately no Node 26/npm 11 flavour. The existing Docker Node 24
+runtime is unchanged; the comparison reports its actual package managers rather
+than assuming parity. The new Docker Node 26 baseline removes Node package
+managers but retains apk. The separately published scanner flavour retains apk.
+**The Node 24 apko runtime now excludes apk**, unlike earlier versions of that
+image. Use a build flavour when installing packages.
+
+[render-node-apko.rb](../../scripts/render-node-apko.rb) derives build/runtime
+configs from [apko.yaml](alpine-runtime/apko.yaml), retaining the MOJ CA,
+timezone, Node entrypoint and UID/GID 2000 accounts. Rendered flavours use only
+Alpine 3.24 main/community, with `nodejs~24` or `nodejs-current~26`.
+These are precompiled Alpine Node packages, not locally compiled Node binaries.
+Melange packages the checksum-pinned npm registry distributions as signed APKs;
+npm itself is JavaScript and is not compiled with Go.
+
+Build images include apk and the selected npm/npx, with `NODE_ENV=development`.
+Runtime images use `NODE_ENV=production` and exclude apk-tools and all Node
+package managers rather than installing and subsequently deleting them.
+They retain a shell, CA certificates and timezone data; they are not distroless.
+Go and native compilers are not installed in either flavour.
+
+### Local builds
+
+Install Ruby, apko and Melange, and start Docker. From the repository root:
 
 ```sh
-brew install apko
+make node-flavour NODE_MAJOR=24 NPM_MAJOR=11 FLAVOUR=build
+make node-flavour NODE_MAJOR=24 NPM_MAJOR=12 FLAVOUR=build
+make node-flavour NODE_MAJOR=26 NPM_MAJOR=12 FLAVOUR=build
+make node-flavour NODE_MAJOR=24 FLAVOUR=runtime
+make node-flavour NODE_MAJOR=26 FLAVOUR=runtime
 ```
 
-Then, from the repository root, assemble the image from prebuilt Alpine packages:
+`ARCH` defaults to the host architecture; specify `ARCH=amd64` or `ARCH=arm64`
+to override. Docker image tags are, for example,
+`hmpps-node-24-build-npm11:local-arm64` and `hmpps-node-26-runtime:local-arm64`.
+Outputs default to `/tmp/hmpps-node-flavours`. The build target reuses signed
+APK output and caches under `SCANNER_BUILD_DIR` (default `/tmp/hmpps-scanners`).
+Set `SCANNER_CA_CERTIFICATE=/absolute/path/to/moj-root.crt` when guest downloads
+need MOJ TLS inspection trust; see the CA download command below. No Melange
+build or signing key is needed for runtime-only images.
+
+For manual runtime assembly:
 
 ```sh
-mkdir -p /tmp/hmpps-node-output && \
-
-apko build \
-  --arch arm64 \
-  --sbom-path /tmp/hmpps-node-output \
-  images/node/alpine-runtime/apko.yaml \
-  hmpps-node-runtime:local \
-  /tmp/hmpps-node-output/hmpps-node-runtime.tar && \
-
-docker load --input /tmp/hmpps-node-output/hmpps-node-runtime.tar && \
+mkdir -p /tmp/hmpps-node-output
+ruby scripts/render-node-apko.rb 26 runtime /tmp/hmpps-node-output/apko.yaml
+apko build --arch arm64 --sbom-path /tmp/hmpps-node-output \
+  /tmp/hmpps-node-output/apko.yaml hmpps-node-runtime:local \
+  /tmp/hmpps-node-output/image.tar
+docker load --input /tmp/hmpps-node-output/image.tar
 docker run --rm hmpps-node-runtime:local-arm64 --version
 ```
 
-Apko runs directly on your machine without a Docker build runner. Docker is only
-needed to load and run the resulting image. No compilation, Melange, or local
-package-signing keys are required.
+The shared template still contains apk for scanner compatibility; **render a
+runtime config first** instead of building that template directly for production.
+The images run as numeric UID 0 by default; `appuser` is available via
+`--user 2000:2000`. Use `--user 0:0`, not `--user root`, when overriding root.
 
-The apko runtime currently runs as root; the `appuser` account (UID/GID 2000)
-is available for applications to select explicitly.
-The apko accounts configuration uses numeric `run-as: 0`, so Docker runs as root
-without requiring a named root account or `alpine-baselayout-data`. Apko rejects
-explicit UID-0 user definitions. Use `--user 0:0`, not `--user root`, when
-overriding the user on this image.
+### CI comparisons
 
-The `nodejs~24` constraint selects available Node.js 24 packages from Alpine
-3.24 without allowing an upgrade to Node 25 or later. npm, npx, Corepack, and
-Yarn are not requested. This is Alpine's Node build rather than the binary
-distributed in the official Docker Node image; validate application and native
-module compatibility and scan the resulting image before production use.
-Alpine's `apk` package manager is included via `apk-tools` for installing system
-packages. With the default Node entrypoint, invoke it using
-`docker run --rm --entrypoint /sbin/apk hmpps-node-runtime:local-arm64 --version`.
+The workflow builds all five pairs and compares same-run AMD64 images in the
+**Compare Docker and apko/Melange Node images** job. Its job summary and
+`node-image-comparison` artifact include:
 
-Go is pinned to `1.27.2-r0` from Alpine edge/community because Alpine 3.24 does
-not provide this version. The edge repository is untagged to keep the generated
-APK world compatible with `apk`; it can also supply other packages and dependencies.
-Mixing stable and edge is not supported by Alpine. Validate application
-compatibility and scan the image before production use. Edge is rolling, so
-removal of the pinned version will require a pin update or an archived package source.
-`GOTOOLCHAIN=local` prevents Go from
-automatically downloading a different toolchain. Check the installed version with
-`docker run --rm --entrypoint go hmpps-node-runtime:local-arm64 version`.
+- Snyk critical/high/medium/low finding counts, including application dependencies.
+- Uncompressed local Docker image size, in MiB.
+- Build-stage elapsed seconds, including cache restoration, assembly and publishing,
+  excluding scanning.
+- Actual Node/npm versions and presence of apk, npm, npx, yarn, yarnpkg,
+  corepack and pnpm.
 
-The apko config uses Alpine 3.24 repositories alongside edge/community and pins
-the `ca-certificates` and `libstdc++` package versions. It also installs the MOJ Production Root CA into the system
-trust bundle; its PEM is embedded in the apko config from the
-[MOJ devcontainer source](https://raw.githubusercontent.com/ministryofjustice/.devcontainer/refs/heads/main/images/base/src/usr/local/share/ca-certificates/moj-root.crt).
-Use `--arch x86_64` on Intel or `--arch arm64` on ARM64. For both platforms use
-`--arch x86_64,arm64`. Loaded archive tags have architecture suffixes (`-amd64`
-or `-arm64`). To publish directly,
-replace `apko build` with `apko publish`, provide a registry image tag, and
-authenticate to that registry first.
+Failed or skipped scans are **N/A**, not zero vulnerabilities. Missing builds
+appear explicitly. Counts are findings, not deduplicated CVEs. Dependency versions,
+base-image packaging, cache warmth and retained Docker package managers can differ;
+the comparison does not imply feature parity or guaranteed vulnerability reduction.
+Both backends build/publish AMD64 and ARM64 for comparison flavours on every
+run. Comparisons always inspect AMD64, probing versions/package managers as
+numeric UID 0 independently of the configured default container user.
+No extra scan service is introduced: both
+backends use the existing pinned shared Snyk action, at threshold `low`.
+
+Run configuration/report tests with `node --test tests/node-flavours.test.cjs`.
+
+### Scanner runtime flavour
+
+CI also publishes
+`ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-runtime-24-apko-scanners`.
+It uses the same apko configuration plus the signed `hmpps-node-scanners` APK:
+
+| Tool | Version | Build toolchain |
+|------|---------|-----------------|
+| Scorecard | 5.6.0 | Alpine `go=1.27.2-r0` |
+| Conftest | 0.71.1 | Alpine `go=1.27.2-r0` |
+| Betterleaks | 1.9.0 | Alpine `go=1.27.2-r0` |
+| Hadolint | 2.15.1 | SHA-256-verified upstream static binary (Haskell, not Go) |
+| Snyk CLI (public build) | 1.1308.0-oss | Alpine `go=1.27.2-r0`, with the legacy Node/TypeScript CLI built from source |
+
+Snyk uses upstream `BUILD_MODE=public`, including its required `-oss` version
+suffix, license collection and embedded legacy CLI. The Go executable is verified
+as Go 1.27.2; this is not a guarantee about every embedded or dynamically downloaded
+component. The legacy CLI bundles a pkg-provided Node runtime, not a Go-compiled
+runtime. Private Snyk features are not included, and IaC testing needs the upstream
+`IAC_RULES_URL` configuration, which this recipe does not supply. This build is not
+feature-equivalent to Snyk's official distribution.
+When running Snyk as `appuser`, set `HOME` to a writable directory and create
+it before invoking Snyk (for example `HOME=/tmp/snyk-home` and
+`mkdir -p "$HOME"`). The base image intentionally uses `/dev/null` as
+`appuser`'s account home; Snyk's legacy config store requires a real directory.
+
+Snyk's build uses Node 24, pinned npm 11.12.1 and upstream Make targets.
+Its license tooling uses proxy-first Go downloads with direct fallback to avoid
+cloning entire histories of older dependencies. npm and pkg downloads are cached
+alongside Go dependencies under `/var/cache/melange`.
+
+Melange compiles static binaries with `CGO_ENABLED=0` and
+`GOTOOLCHAIN=local`, verifying the embedded Go compiler version. Source archives
+are pinned by SHA-256; Go dependencies are downloaded directly from source repositories
+and verified against the source's module checksums and Go's checksum database
+(except Snyk's proxy-first build described above).
+`GOPROXY=direct` bypasses the module proxy, whose ZIP downloads repeatedly stall
+or truncate in the local network environment. Proxy-first fallback still waits
+for a stalled transfer to fail before trying the source repository.
+Source downloads still undergo Go checksum
+verification; Git is installed only in the build guest. Final download or
+checksum failures still stop the build.
+Only the scanner binaries and Snyk license enter the runtime APK: Go, GCC and npm are not
+added. The image retains the Node entrypoint, MOJ CA, timezone and accounts.
+Override the entrypoint to run a scanner, for example:
+
+```sh
+docker run --rm --entrypoint conftest \
+  ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-runtime-24-apko-scanners:main \
+  --version
+```
+
+For a native ARM64 local build, install `melange` and `apko`, ensure Docker is
+running, then run from the repository root:
+
+```sh
+mkdir -p /tmp/hmpps-scanners/keys /tmp/hmpps-scanners/source /tmp/hmpps-scanners/output /tmp/hmpps-scanners/cache
+curl --fail --show-error --location \
+  https://raw.githubusercontent.com/ministryofjustice/.devcontainer/refs/heads/main/images/base/src/usr/local/share/ca-certificates/moj-root.crt \
+  --output /tmp/hmpps-scanners/moj-root.crt
+melange keygen /tmp/hmpps-scanners/keys/melange.rsa
+melange build \
+  --runner docker --arch aarch64 \
+  --ca-certificate-append /tmp/hmpps-scanners/moj-root.crt \
+  --cache-dir /tmp/hmpps-scanners/cache \
+  --apk-cache-dir /tmp/hmpps-scanners/apk-cache \
+  --source-dir /tmp/hmpps-scanners/source \
+  --signing-key /tmp/hmpps-scanners/keys/melange.rsa \
+  --out-dir /tmp/hmpps-scanners/packages \
+  images/node/alpine-runtime/melange.scanners.yaml
+apko build \
+  --arch arm64 \
+  --build-repository-append /tmp/hmpps-scanners/packages \
+  --keyring-append /tmp/hmpps-scanners/keys/melange.rsa.pub \
+  --package-append hmpps-node-scanners=1.0.0-r3 \
+  --sbom-path /tmp/hmpps-scanners/output \
+  images/node/alpine-runtime/apko.yaml \
+  hmpps-node-scanners:local \
+  /tmp/hmpps-scanners/output/image.tar
+docker load --input /tmp/hmpps-scanners/output/image.tar
+docker run --rm --entrypoint scorecard hmpps-node-scanners:local-arm64 version
+docker run --rm --entrypoint conftest hmpps-node-scanners:local-arm64 --version
+docker run --rm --entrypoint betterleaks hmpps-node-scanners:local-arm64 version
+docker run --rm --entrypoint hadolint hmpps-node-scanners:local-arm64 --version
+docker run --rm --entrypoint snyk hmpps-node-scanners:local-arm64 --version
+```
+
+The commands above append the MOJ root CA to the build guest's trust bundle.
+This covers source and Go module downloads through MOJ TLS inspection;
+final-image CA configuration does not configure the build guest.
+If the Melange CLI itself cannot download Alpine repository indexes or packages,
+also configure its process trust with
+`SSL_CERT_FILE=/tmp/hmpps-scanners/moj-root.crt melange build ...` on macOS, where
+Go also retains system roots. Do not disable certificate verification.
+Use `--arch x86_64` for both tools on AMD64.
+Keep signing keys secure and reuse the APK repository for image-only changes.
+For subsequent local package builds, the Make target creates the cache
+directories before invoking Melange and reuses the signing key:
+
+```sh
+make scanners ARCH=arm64 \
+  SCANNER_CA_CERTIFICATE=/tmp/hmpps-scanners/moj-root.crt
+```
+
+`SCANNER_BUILD_DIR` defaults to `/tmp/hmpps-scanners`; set it to an absolute
+directory on persistent storage to survive temporary-directory cleanup.
+The Makefile defaults `ARCH` to the local host architecture to avoid emulating
+AMD64 on ARM64 Macs. Omit `ARCH` for native builds; use `ARCH=amd64` only when
+you need an AMD64 output. Caches are architecture-specific, so the first native
+build after an emulated build may still compile dependencies.
+The host `cache` directory must exist before Melange starts; otherwise Melange
+can skip its mount and silently use an ephemeral guest cache.
+Keep the cache directory between builds: it holds source archives, Go modules
+and compiled Go packages. `--apk-cache-dir` separately retains Alpine package
+downloads for the build environment. CI restores and saves these caches with
+`actions/cache`, including after failed compilation so completed downloads and
+compilation work are retained. Go separates cached outputs by their build inputs and target
+architecture. The first build still downloads and compiles dependencies; later
+builds can reuse that work. Do not start duplicate builds to accelerate an
+existing build or delete its cache while it is running.
+Melange still assembles and signs an APK on every invocation; Go reuses unchanged
+compiled dependencies rather than recompiling them. Skip Melange and rerun only
+apko when reusing an existing signed scanner APK for image-only changes.
+The scanner build sets `GODEBUG=http2client=0` to avoid HTTP/2 stream resets
+seen during module downloads through the local proxy; truncated downloads also
+are avoided by bypassing the module proxy as described above. TLS certificate and Go
+module checksum verification remain enabled.
+When updating scanner versions in the recipe (including source checksums and linker version metadata),
+bump its package epoch and update the APK pin in CI and these commands. The
+exact Go pin must remain available in edge/community or builds will fail.
 
 Registries:
 

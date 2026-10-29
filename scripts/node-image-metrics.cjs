@@ -1,0 +1,121 @@
+const fs = require('node:fs');
+const path = require('node:path');
+const { execFileSync } = require('node:child_process');
+
+const managers = ['apk', 'npm', 'npx', 'yarn', 'yarnpkg', 'corepack', 'pnpm'];
+
+function countVulnerabilities(report) {
+  const counts = { critical: 0, high: 0, medium: 0, low: 0 };
+  const reports = Array.isArray(report) ? report : [report];
+  if (!reports.length) throw new Error('Empty Snyk report');
+  for (const result of reports) {
+    if (result.error || !Array.isArray(result.vulnerabilities)) {
+      throw new Error('Snyk report does not contain a successful vulnerability result');
+    }
+    for (const vulnerability of result.vulnerabilities) {
+      if (!Object.hasOwn(counts, vulnerability.severity)) {
+        throw new Error(`Unknown vulnerability severity: ${vulnerability.severity}`);
+      }
+      counts[vulnerability.severity]++;
+    }
+  }
+  return counts;
+}
+
+function validateVersions(result, major, npmMajor, backend) {
+  if (result.node.split('.')[0] !== `v${major}`) {
+    throw new Error(`Expected Node ${major}, got ${result.node}`);
+  }
+  if (npmMajor) {
+    if (result.npm?.split('.')[0] !== String(npmMajor) ||
+        !result.managers.apk || !result.managers.npx) {
+      throw new Error(`Expected npm ${npmMajor}, npx and apk: ${JSON.stringify(result)}`);
+    }
+  } else if (backend === 'apko' && Object.values(result.managers).some(Boolean)) {
+    throw new Error(`Runtime contains a package manager: ${JSON.stringify(result.managers)}`);
+  }
+}
+
+function collect(env) {
+  const { IMAGE_REF, COMPARISON, BACKEND, NODE_MAJOR, NPM_MAJOR, BUILD_SECONDS, OUTPUT_DIR } = env;
+  for (const name of ['IMAGE_REF', 'COMPARISON', 'BACKEND', 'NODE_MAJOR', 'BUILD_SECONDS', 'OUTPUT_DIR']) {
+    if (!env[name]) throw new Error(`Missing ${name}`);
+  }
+  const inspection = JSON.parse(execFileSync('docker', ['image', 'inspect', IMAGE_REF], { encoding: 'utf8' }))[0];
+  const probe = `
+    const { spawnSync } = require('node:child_process');
+    const managers = Object.fromEntries(${JSON.stringify(managers)}.map(name =>
+      [name, spawnSync('/bin/sh', ['-c', 'command -v ' + name]).status === 0]));
+    let npm = null;
+    if (managers.npm) {
+      const version = spawnSync('npm', ['--version'], { encoding: 'utf8' });
+      if (version.status !== 0) throw new Error(version.stderr);
+      npm = version.stdout.trim();
+    }
+    console.log(JSON.stringify({node: process.version, runtimeArchitecture: process.arch, npm, managers}));
+  `;
+  const runtime = JSON.parse(execFileSync('docker', [
+    'run', '--rm', '--platform', 'linux/amd64', '--user', '0:0', '--entrypoint', 'node', IMAGE_REF, '-e', probe,
+  ], { encoding: 'utf8' }));
+  validateVersions(runtime, NODE_MAJOR, NPM_MAJOR, BACKEND);
+  const seconds = Number(BUILD_SECONDS);
+  if (!Number.isFinite(seconds) || seconds < 0) throw new Error('Invalid build duration');
+  const result = {
+    comparison: COMPARISON, backend: BACKEND, image: IMAGE_REF,
+    architecture: inspection.Architecture, bytes: inspection.Size, seconds,
+    ...runtime,
+    vulnerabilities: null,
+    scanStatus: env.SCAN_STATUS || 'unavailable',
+  };
+  if (result.architecture !== 'amd64') throw new Error('Comparison requires AMD64 images');
+  if (result.runtimeArchitecture !== 'x64') throw new Error('Image metadata and executable architecture disagree');
+  if (result.scanStatus === 'success') {
+    result.vulnerabilities = countVulnerabilities(JSON.parse(fs.readFileSync('snyk-results.json', 'utf8')));
+  } else {
+    console.error(`::warning::${COMPARISON}/${BACKEND}: vulnerability scan ${result.scanStatus}; counts unavailable`);
+  }
+  fs.mkdirSync(OUTPUT_DIR, { recursive: true });
+  fs.writeFileSync(path.join(OUTPUT_DIR, `${COMPARISON}-${BACKEND}.json`), JSON.stringify(result, null, 2));
+}
+
+function summary(results) {
+  const lines = [
+    '## Node image comparison (AMD64)',
+    '',
+    '| Flavour | Build | Node | npm | Package managers present | Size (MiB) | Build (s) | Critical | High | Medium | Low |',
+    '|---|---|---|---|---|---:|---:|---:|---:|---:|---:|',
+  ];
+  const expected = ['build-24-npm11', 'build-24-npm12', 'build-26-npm12', 'runtime-24', 'runtime-26'];
+  for (const flavour of expected) {
+    for (const backend of ['docker', 'apko']) {
+      const matches = results.filter(r => r.comparison === flavour && r.backend === backend);
+      if (matches.length > 1) throw new Error(`Duplicate metrics for ${flavour}/${backend}`);
+      const r = matches[0];
+      if (!r) {
+        lines.push(`| ${flavour} | ${backend} | **Missing / failed build** | - | - | - | - | - | - | - | - |`);
+        continue;
+      }
+      const present = managers.filter(name => r.managers[name]).join(', ') || 'none';
+      const v = r.vulnerabilities;
+      lines.push(`| ${flavour} | ${backend} | ${r.node} | ${r.npm || 'none'} | ${present} | ${(r.bytes / 1048576).toFixed(1)} | ${r.seconds} | ${v?.critical ?? 'N/A'} | ${v?.high ?? 'N/A'} | ${v?.medium ?? 'N/A'} | ${v?.low ?? 'N/A'} |`);
+    }
+  }
+  lines.push('', 'Size is Docker-reported uncompressed local image size. Build duration includes cache restoration, package/image assembly and publishing, but excludes security scanning.',
+    '', 'Vulnerability counts are Snyk findings (including application dependencies) at threshold low, not unique CVEs. N/A means the scan was unavailable or failed, never zero findings.',
+    '', 'Alpine release, dependency versions, cache warmth and retained Docker package managers can differ; this is a measured comparison, not a feature-parity or vulnerability-reduction guarantee.',
+    '', 'Version/package-manager probes run as numeric UID 0 to inspect all baselines consistently; they do not validate the default container user.',
+    '', 'Docker runtime baselines retain their existing package-manager behaviour. Only apko runtimes enforce no package managers.');
+  return `${lines.join('\n')}\n`;
+}
+
+if (require.main === module) {
+  const [command, directory] = process.argv.slice(2);
+  if (command === 'collect') collect(process.env);
+  else if (command === 'summary' && directory) {
+    const results = fs.readdirSync(directory).filter(name => name.endsWith('.json')).map(name =>
+      JSON.parse(fs.readFileSync(path.join(directory, name), 'utf8')));
+    process.stdout.write(summary(results));
+  } else throw new Error('Usage: node scripts/node-image-metrics.cjs collect | summary <metrics-directory>');
+}
+
+module.exports = { countVulnerabilities, validateVersions, summary };

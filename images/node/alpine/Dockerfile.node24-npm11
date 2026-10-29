@@ -1,6 +1,10 @@
 # HMPPS Node.js Base Image
 # Pinned to tag node:24-alpine3.24 via sha.
-FROM node:24-alpine3.24@sha256:429bdfbc204b4eabc6438e6d34e4e9d8dd2ca1df8289bcd78cdd3c5db387b7a5 AS base
+FROM ghcr.io/ministryofjustice/devcontainer-base:4.2.1 AS ca
+FROM node:24-alpine3.24@sha256:8a32c8cf649a49915a66e81e7a609223c708d0adabf288ee3f4077d765542f85 AS base
+COPY --from=ca /usr/local/share/ca-certificates/moj-root.crt /usr/local/share/ca-certificates/moj-root.crt
+RUN cat /usr/local/share/ca-certificates/moj-root.crt >> /etc/ssl/certs/ca-certificates.crt
+ENV NODE_EXTRA_CA_CERTS=/usr/local/share/ca-certificates/moj-root.crt
 
 # Metadata
 LABEL org.opencontainers.image.title="HMPPS Node.js Base Image"
@@ -24,9 +28,12 @@ RUN ln -snf /usr/share/zoneinfo/${TZ} /etc/localtime && echo ${TZ} > /etc/timezo
 # Security upgrades in separate stage for cache control
 # Build with: docker buildx build --no-cache-filter=security-upgrades ...
 FROM base AS security-upgrades
+# renovate: datasource=npm depName=npm
+ARG NPM_VERSION=11.12.1
 # NPM upgrade can be reverted when the default version gets bumps in the base
 # Remove unnecessary files from node_modules
-RUN npm cache clean --force && \
+RUN npm install -g "npm@${NPM_VERSION}" && \
+    npm cache clean --force && \
     find /usr/local/lib/node_modules -name "*.md" -delete && \
     find /usr/local/lib/node_modules -name "*.txt" -delete && \
     find /usr/local/lib/node_modules -name "CHANGELOG*" -delete && \
