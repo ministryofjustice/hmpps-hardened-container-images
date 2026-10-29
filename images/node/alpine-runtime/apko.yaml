@@ -4,9 +4,9 @@ contents:
     - https://dl-cdn.alpinelinux.org/alpine/v3.24/community
     - https://dl-cdn.alpinelinux.org/alpine/edge/community
   packages:
-    # - alpine-baselayout-data
+    - alpine-baselayout-data
     - alpine-release
-    - apk-tools
+    # - apk-tools
     - nodejs~24
     - go=1.27.2-r0
     - ca-certificates=20261020-r0
