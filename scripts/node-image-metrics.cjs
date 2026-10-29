@@ -8,17 +8,23 @@ function countVulnerabilities(report) {
   const counts = { critical: 0, high: 0, medium: 0, low: 0 };
   const reports = Array.isArray(report) ? report : [report];
   if (!reports.length) throw new Error('Empty Snyk report');
-  for (const result of reports) {
-    if (result.error || !Array.isArray(result.vulnerabilities)) {
+  function countResult(result) {
+    if (!result || typeof result !== 'object' || Array.isArray(result) ||
+        result.error || !Array.isArray(result.vulnerabilities)) {
       throw new Error('Snyk report does not contain a successful vulnerability result');
     }
     for (const vulnerability of result.vulnerabilities) {
-      if (!Object.hasOwn(counts, vulnerability.severity)) {
-        throw new Error(`Unknown vulnerability severity: ${vulnerability.severity}`);
+      if (!vulnerability || !Object.hasOwn(counts, vulnerability.severity)) {
+        throw new Error(`Unknown vulnerability severity: ${vulnerability?.severity}`);
       }
       counts[vulnerability.severity]++;
     }
+    if (Object.hasOwn(result, 'applications')) {
+      if (!Array.isArray(result.applications)) throw new Error('Invalid Snyk applications result');
+      for (const application of result.applications) countResult(application);
+    }
   }
+  for (const result of reports) countResult(result);
   return counts;
 }
 
@@ -106,7 +112,7 @@ function summary(results) {
     }
   }
   lines.push('', 'Size is the local Docker image inspect Size field, measured with the same storage driver for both backends. Build duration includes cache restoration, package/image assembly and publishing, but excludes security scanning.',
-    '', 'Vulnerability counts are Snyk findings (including application dependencies) at threshold low, not unique CVEs. N/A means the scan was unavailable or failed, never zero findings.',
+    '', 'Vulnerability counts include both Snyk OS findings and nested application dependency findings at threshold low, not unique CVEs. Repeated dependency paths are counted separately. N/A means the scan was unavailable or failed, never zero findings.',
     '', 'Alpine release, dependency versions, cache warmth and retained Docker package managers can differ; this is a measured comparison, not a feature-parity or vulnerability-reduction guarantee.',
     '', 'Version/package-manager probes run as numeric UID 0 to inspect all baselines consistently; they do not validate the default container user.',
     '', 'Docker runtime baselines retain their existing package-manager behaviour. Only apko runtimes enforce no package managers.');

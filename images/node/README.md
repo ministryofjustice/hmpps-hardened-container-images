@@ -111,7 +111,9 @@ The workflow builds all five pairs and compares same-run AMD64 images in the
 **Compare Docker and apko/Melange Node images** job. Its job summary and
 `node-image-comparison` artifact include:
 
-- Snyk critical/high/medium/low finding counts, including application dependencies.
+- Snyk critical/high/medium/low finding counts, extracted from both the top-level
+  `vulnerabilities` array (OS packages) and `applications[].vulnerabilities`
+  (application dependencies) in `snyk-results.json`.
 - Local Docker-reported image size (`docker image inspect`'s `Size`), in MiB.
 - Build-stage elapsed seconds, including cache restoration, assembly and publishing,
   excluding scanning.
@@ -119,7 +121,8 @@ The workflow builds all five pairs and compares same-run AMD64 images in the
   corepack and pnpm.
 
 Failed or skipped scans are **N/A**, not zero vulnerabilities. Missing builds
-appear explicitly. Counts are findings, not deduplicated CVEs. Dependency versions,
+appear explicitly. Counts are findings, not deduplicated CVEs; repeated dependency
+paths count separately. Dependency versions,
 base-image packaging, cache warmth and retained Docker package managers can differ;
 the comparison does not imply feature parity or guaranteed vulnerability reduction.
 Both backends build/publish AMD64 and ARM64 for comparison flavours on every

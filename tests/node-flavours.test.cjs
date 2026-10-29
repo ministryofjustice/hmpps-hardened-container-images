@@ -28,9 +28,40 @@ test('counts every supported severity across multiple Snyk results', () => {
 });
 
 test('scan errors, missing results and unknown severities never become zero findings', () => {
-  for (const result of [{ error: 'auth failed' }, {}, [], { vulnerabilities: [{ severity: 'unknown' }] }]) {
+  for (const result of [
+    { error: 'auth failed' }, {}, [], null, { vulnerabilities: [null] },
+    { vulnerabilities: [{ severity: 'unknown' }] },
+    { vulnerabilities: [], applications: {} },
+    { vulnerabilities: [], applications: [{ error: 'application scan failed' }] },
+    { vulnerabilities: [], applications: [null] },
+    { vulnerabilities: [], applications: [{ vulnerabilities: [{ severity: 'unknown' }] }] },
+  ]) {
     assert.throws(() => countVulnerabilities(result));
   }
+});
+
+test('counts nested Snyk container application findings even when OS findings are empty', () => {
+  const report = {
+    ok: true,
+    vulnerabilities: [],
+    applications: [{
+      ok: false,
+      vulnerabilities: [
+        ...Array.from({ length: 1935 }, () => ({ severity: 'high' })),
+        ...Array.from({ length: 986 }, () => ({ severity: 'medium' })),
+      ],
+    }],
+  };
+  assert.deepEqual(countVulnerabilities(report), { critical: 0, high: 1935, medium: 986, low: 0 });
+  assert.deepEqual(countVulnerabilities([
+    report,
+    { vulnerabilities: [{ severity: 'critical' }], applications: [
+      { vulnerabilities: [{ severity: 'low' }] },
+      { vulnerabilities: [{ severity: 'high' }] },
+    ] },
+  ]), { critical: 1, high: 1936, medium: 986, low: 1 });
+  assert.deepEqual(countVulnerabilities({ vulnerabilities: [], applications: [{ vulnerabilities: [] }] }),
+    { critical: 0, high: 0, medium: 0, low: 0 });
 });
 
 test('checks Node/npm majors and requires both npm and apk in builds', () => {
