@@ -106,6 +106,6 @@ test('workflow covers matching Docker/apko pairs with correctly pinned npm APKs'
   }
   const scanner = workflow.jobs['publish-scanners'].strategy.matrix.include.find(entry => entry.scanners);
   assert.ok(scanner);
-  assert.equal(scanner.flavour, undefined);
-  assert.equal(scanner.comparison, undefined);
+  assert.ok(!scanner.flavour);
+  assert.ok(!scanner.comparison);
 });
