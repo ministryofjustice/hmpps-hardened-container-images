@@ -6,7 +6,7 @@ Lean, standardized Python base image for HMPPS apps.
 
 | Image | Variant Tag | OS | Arch (multi-platform) | Notes |
 |-------|-------------|----|-----------------------|-------|
-| hmpps-python | python3.13-alpine | Alpine | amd64, arm64 | Lightweight runtime with uv preinstalled |
+| python-alpine | 3.13-docker-main | Alpine | amd64, arm64 | Lightweight runtime with uv preinstalled |
 
 
 ## Features
@@ -16,18 +16,16 @@ Lean, standardized Python base image for HMPPS apps.
 - Security upgrades stage (`apk upgrade --no-cache`)
 - OCI labels: `hmpps.python.base_image`, `hmpps.python.base_variant`, `org.opencontainers.image.base.name`
 
-Registry: `ghcr.io/ministryofjustice/hmpps-python`
+Registry: `ghcr.io/ministryofjustice/hmpps-hardened-container-images/python-alpine`
 
-Common tags: `python3.13-alpine`, date tags (YYYYMMDD), `latest`
-
-Current latest mapping in CI:
-
-- `ghcr.io/ministryofjustice/hmpps-python:latest` -> `python3.13-alpine`
+Tags combine flavour and source ref, for example `3.13-docker-main` or
+`3.13-docker-v1.2.3`. Old package names are no longer updated; there are no
+`latest`, bare variant, date or SHA aliases.
 
 ## Usage (simple)
 
 ```dockerfile
-FROM ghcr.io/ministryofjustice/hmpps-python:python3.13-alpine
+FROM ghcr.io/ministryofjustice/hmpps-hardened-container-images/python-alpine:3.13-docker-main
 WORKDIR /app
 
 COPY --chown=appuser:appgroup . .
@@ -43,7 +41,7 @@ CMD ["python", "-m", "your_app"]
 
 ```dockerfile
 # Base (provides non-root user, TZ Europe/London, security upgrades)
-FROM ghcr.io/ministryofjustice/hmpps-python:python3.13-alpine AS base
+FROM ghcr.io/ministryofjustice/hmpps-hardened-container-images/python-alpine:3.13-docker-main AS base
 
 # Optional build metadata
 ARG BUILD_NUMBER

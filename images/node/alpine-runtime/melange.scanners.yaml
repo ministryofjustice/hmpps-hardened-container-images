@@ -1,0 +1,135 @@
+package:
+  name: hmpps-node-scanners
+  version: 1.0.0
+  epoch: 3
+  description: Scorecard, Conftest, Betterleaks and public Snyk compiled with Go 1.27.2, plus Hadolint
+  target-architecture:
+    - x86_64
+    - aarch64
+  copyright:
+    - license: Apache-2.0 AND MIT AND GPL-3.0-or-later
+
+environment:
+  contents:
+    repositories:
+      - https://dl-cdn.alpinelinux.org/alpine/v3.24/main
+      - https://dl-cdn.alpinelinux.org/alpine/v3.24/community
+      - https://dl-cdn.alpinelinux.org/alpine/edge/community
+    packages:
+      - busybox
+      - ca-certificates-bundle
+      - git
+      - go=1.27.2-r0
+      - nodejs~24
+      - npm
+      - make
+      - bash
+      - python3
+      - perl-utils
+      - curl
+  environment:
+    CGO_ENABLED: "0"
+    GOTOOLCHAIN: local
+    GOPROXY: https://proxy.golang.org|direct
+    GOSUMDB: sum.golang.org
+    GODEBUG: http2client=0
+    GOMODCACHE: /var/cache/melange/gomodcache
+    GOCACHE: /var/cache/melange/go-build
+    npm_config_cache: /var/cache/melange/npm
+    PKG_CACHE_PATH: /var/cache/melange/pkg
+    NODE_OPTIONS: --use-system-ca
+    GOMAXPROCS: "6"
+    GOFLAGS: -p=2
+
+pipeline:
+  - runs: mkdir -p scorecard conftest betterleaks snyk
+  - uses: fetch
+    with:
+      uri: https://codeload.github.com/ossf/scorecard/tar.gz/refs/tags/v5.6.0
+      expected-sha256: 7c34a91fa6df12993611aa0127e138acea73922eafeb54f3a4537f7743016269
+      directory: scorecard
+  - uses: fetch
+    with:
+      uri: https://codeload.github.com/open-policy-agent/conftest/tar.gz/refs/tags/v0.71.1
+      expected-sha256: 1bf5a6ff4b9d7bd943b9713ace13c83c40b77fd3fcf2a9659f32be67c4a2c368
+      directory: conftest
+  - uses: fetch
+    with:
+      uri: https://codeload.github.com/betterleaks/betterleaks/tar.gz/refs/tags/v1.9.0
+      expected-sha256: d59617a0ee7f7763e71b91e333665d35541e51189e2b265fea538ae5f19f6715
+      directory: betterleaks
+  - uses: fetch
+    with:
+      uri: https://github.com/hadolint/hadolint/releases/download/v2.15.1/hadolint-linux-arm64
+      expected-sha256: f6198ef8090f404dbb771abfee086eb8c48ac177f30da7fd3510aca35b344b5d
+      extract: false
+  - uses: fetch
+    with:
+      uri: https://github.com/hadolint/hadolint/releases/download/v2.15.1/hadolint-linux-x86_64
+      expected-sha256: c7187db94eeeeca956519a6af171adc31453941a1e777961f6e680f697c8c507
+      extract: false
+  - uses: fetch
+    with:
+      uri: https://codeload.github.com/snyk/cli/tar.gz/refs/tags/v1.1308.0
+      expected-sha256: f26cfd0585804421991340224b7b59e5a9265351d8b415164bb99944d6053ab3
+      directory: snyk
+  - name: Compile public Snyk CLI
+    runs: |
+      test "$(go env GOVERSION)" = go1.27.2
+      npm install --global --prefix /tmp/snyk-npm npm@11.12.1 --no-audit --no-fund
+      export PATH="/tmp/snyk-npm/bin:$PATH"
+      cd snyk
+      npm ci --no-audit --no-fund
+      npm run build:prod
+      mkdir -p binary-releases/bin
+      printf '1.1308.0-oss\n' > binary-releases/version
+      cp binary-releases/version binary-releases/bin/version
+      arch="$(go env GOARCH)"
+      case "$arch" in
+        arm64) legacy=snyk-alpine-arm64 ;;
+        amd64) legacy=snyk-alpine ;;
+        *) echo "Unsupported Snyk architecture: $arch" >&2; exit 1 ;;
+      esac
+      make "binary-releases/$legacy" BUILD_MODE=public
+      make -C cliv2 build BUILD_MODE=public GOOS=alpine GOARCH="$arch" \
+        CGO_ENABLED=0 CLI_V1_VERSION_TAG=1.1308.0-oss \
+        CLI_V1_LOCATION="$PWD/binary-releases/" \
+        DESTDIR="$PWD/" prefix=/binary-releases
+      install -Dm755 "cliv2/_bin/snyk_alpine_$arch" "${{targets.destdir}}/usr/bin/snyk"
+      install -Dm644 LICENSE "${{targets.destdir}}/usr/share/licenses/snyk/LICENSE"
+      go version "${{targets.destdir}}/usr/bin/snyk" | grep 'go1.27.2$'
+      test "$("${{targets.destdir}}/usr/bin/snyk" --version)" = 1.1308.0-oss
+  - name: Compile pinned scanner modules
+    runs: |
+      test "$(go env GOVERSION)" = go1.27.2
+      export GOBIN="${{targets.destdir}}/usr/bin"
+      mkdir -p "$GOBIN"
+      (
+        cd scorecard
+        go build -mod=readonly -trimpath -o "$GOBIN/scorecard" \
+          -ldflags="-s -w -X sigs.k8s.io/release-utils/version.gitVersion=v5.6.0" .
+      )
+      (
+        cd betterleaks
+        go build -mod=readonly -trimpath -o "$GOBIN/betterleaks" \
+          -ldflags="-s -w -X github.com/betterleaks/betterleaks/version.Version=1.9.0" .
+      )
+      case "$(go env GOARCH)" in
+        arm64) hadolint=hadolint-linux-arm64 ;;
+        amd64) hadolint=hadolint-linux-x86_64 ;;
+        *) echo "Unsupported Hadolint architecture" >&2; exit 1 ;;
+      esac
+      install -m755 "$hadolint" "$GOBIN/hadolint"
+      (
+        cd conftest
+        go build -mod=readonly -trimpath -o "$GOBIN/conftest" \
+          -ldflags="-s -w -X github.com/open-policy-agent/conftest/internal/version.Version=0.71.1" .
+      )
+      "$GOBIN/scorecard" version
+      "$GOBIN/conftest" --version
+      "$GOBIN/betterleaks" version
+      "$GOBIN/hadolint" --version
+      "$GOBIN/snyk" --version
+      for tool in scorecard conftest betterleaks snyk; do
+        go version "$GOBIN/$tool" | grep 'go1.27.2$'
+      done

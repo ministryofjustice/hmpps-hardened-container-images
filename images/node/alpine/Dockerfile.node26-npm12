@@ -1,0 +1,29 @@
+# syntax=docker/dockerfile:1
+FROM ghcr.io/ministryofjustice/devcontainer-base:4.2.1 AS ca
+FROM node:26-alpine3.24@sha256:c6ad9e9c1d80f6eb607c26b4b0a132ff7a2344fad1c78ea3baa2a7d4c8de6d94 AS base
+COPY --from=ca /usr/local/share/ca-certificates/moj-root.crt /usr/local/share/ca-certificates/moj-root.crt
+RUN cat /usr/local/share/ca-certificates/moj-root.crt >> /etc/ssl/certs/ca-certificates.crt
+ENV NODE_EXTRA_CA_CERTS=/usr/local/share/ca-certificates/moj-root.crt
+
+LABEL org.opencontainers.image.title="HMPPS Node.js 26 Build Image"
+LABEL org.opencontainers.image.description="Node.js 26 build image with npm 12 and apk"
+LABEL org.opencontainers.image.source="https://github.com/ministryofjustice/hmpps-hardened-container-images"
+LABEL org.opencontainers.image.vendor="Ministry of Justice"
+
+ARG APP_UID=2000
+ARG APP_GID=2000
+RUN addgroup -g "${APP_GID}" -S appgroup && \
+    adduser -u "${APP_UID}" -S appuser -G appgroup
+
+FROM base AS security-upgrades
+# renovate: datasource=npm depName=npm
+ARG NPM_VERSION=12.2.0
+RUN apk upgrade --no-cache && \
+    apk add --no-cache tzdata ca-certificates && \
+    npm install -g "npm@${NPM_VERSION}" && \
+    npm cache clean --force && \
+    test "$(npm --version | cut -d. -f1)" = 12
+
+ENV TZ="Europe/London"
+RUN ln -snf "/usr/share/zoneinfo/${TZ}" /etc/localtime && echo "${TZ}" > /etc/timezone
+WORKDIR /app
