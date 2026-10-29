@@ -94,7 +94,7 @@ test('workflow covers matching Docker/apko pairs with correctly pinned npm APKs'
   ]));
   const matrix = workflow.jobs['build-scan-push'].strategy.matrix.include;
   const comparisons = matrix.filter(entry => entry.comparison);
-  assert.equal(comparisons.length, 8);
+  assert.equal(comparisons.length, 10);
   for (const flavour of ['build-24-npm11', 'build-24-npm12', 'build-26-npm12', 'runtime-24']) {
     assert.deepEqual(comparisons.filter(entry => entry.comparison === flavour).map(entry => entry.backend).sort(), ['apko', 'docker']);
   }
