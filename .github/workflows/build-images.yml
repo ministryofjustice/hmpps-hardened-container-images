@@ -70,6 +70,11 @@ jobs:
             dockerfile: images/node/alpine-runtime/Dockerfile
             tag_prefix: ''
             publish_latest: true
+          - image_name: hardened-alpine-node-runtime-24-apko
+            context: images/node/alpine-runtime
+            apko_config: images/node/alpine-runtime/apko.yaml
+            tag_prefix: ''
+            publish_latest: true
           - image_name: hardened-distroless-node-24
             context: images/node/distroless
             dockerfile: images/node/distroless/Dockerfile
@@ -121,6 +126,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push container image
+        if: ${{ !matrix.apko_config }}
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: ./${{ matrix.context }}
@@ -144,12 +150,31 @@ jobs:
           cache-to: type=gha,mode=max
           no-cache-filters: security-upgrades
 
+      - name: Build and push apko image
+        if: ${{ matrix.apko_config }}
+        env:
+          APKO_CONFIG: ${{ matrix.apko_config }}
+          APKO_IMAGE_REF: ${{ steps.snyk_image.outputs.image_ref }}
+          APKO_ARCHES: ${{ (github.ref_type == 'tag' || github.event_name == 'schedule') && 'x86_64,arm64' || 'x86_64' }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/apko-sbom"
+          docker run --rm \
+            --volume "$GITHUB_WORKSPACE:/work" \
+            --volume "$RUNNER_TEMP/apko-sbom:/sbom" \
+            --volume "$HOME/.docker/config.json:/root/.docker/config.json:ro" \
+            --workdir /work \
+            cgr.dev/chainguard/apko@sha256:20ac78c9ccfd679a31a5c4e7c93b5861504ca0768d2ad60cc7fadb5933f7db37 \
+            publish \
+            --arch "$APKO_ARCHES" \
+            --sbom-path /sbom \
+            "$APKO_CONFIG" \
+            "$APKO_IMAGE_REF"
 
       - name: Snyk scan
         id: snyk-scan
         uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/snyk-scan@2848496f6e2f4144b17fd3f23519c851789e4b87
         with:
-          subproject: ${{ matrix.dockerfile }}
+          subproject: ${{ matrix.dockerfile || matrix.apko_config }}
           severity: high
           scan_type: image
           location: '.'

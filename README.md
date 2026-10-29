@@ -43,6 +43,7 @@ These images are automatically built, scanned, and published to GitHub Container
 |---------|-------------|
 | `ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-24` | Alpine Node.js 24 |
 | `ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-runtime-24` | Alpine runtime image with npm, yarn and corepack removed |
+| `ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-runtime-24-apko` | Separately published apko variant with Alpine Node 24, Go and apk |
 | `ghcr.io/ministryofjustice/hmpps-hardened-distroless-node-24` | Distroless Node.js 24 |
 
 ---
@@ -59,7 +60,11 @@ These images are automatically built, scanned, and published to GitHub Container
 
 Enable the Renovate GitHub App for this repository to activate `renovate.json`.
 Renovate opens pull requests for Docker base-image tags and digests, GitHub Actions,
-pre-commit hooks, and annotated Dockerfile package versions. Updates require review
+pre-commit hooks, annotated Dockerfile package versions, and pinned package versions
+in the Node Alpine runtime apko config. The separately published apko variant uses Alpine's
+prebuilt `nodejs` package constrained to major version 24, and is
+assembled with apko from Alpine 3.24 and edge/community packages using
+`images/node/alpine-runtime/apko.yaml`. Updates require review
 and CI; automatic merging is not enabled. The Dependency Dashboard tracks pending
 updates and lookup failures.
 

@@ -4,6 +4,24 @@
     "github>ministryofjustice/hmpps-renovate-config:node",
     "helpers:pinGitHubActionDigests"
   ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "fileMatch": ["^images/node/alpine-runtime/apko\\.yaml$"],
+      "matchStrings": ["ca-certificates(?:-bundle)?=(?<currentValue>[^\\s]+)"],
+      "datasourceTemplate": "repology",
+      "depNameTemplate": "alpine_3_24/ca-certificates",
+      "versioningTemplate": "loose"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": ["^images/node/alpine-runtime/apko\\.yaml$"],
+      "matchStrings": ["libstd\\+\\+=(?<currentValue>[^\\s]+)"],
+      "datasourceTemplate": "repology",
+      "depNameTemplate": "alpine_3_24/libstd++",
+      "versioningTemplate": "loose"
+    }
+  ],
   "prBodyTemplate": "{{{table}}}{{{notes}}}{{{warnings}}}{{{controls}}}",
   "dependencyDashboard": true,
   "packageRules": [

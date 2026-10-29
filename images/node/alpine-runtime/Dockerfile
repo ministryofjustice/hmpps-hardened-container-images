@@ -3,7 +3,9 @@
 # HMPPS Node.js Runtime Base Image.
 # The digest must resolve to the intended Node 24 Alpine image.
 # Pinned to tag node:24-alpine3.24 via sha.
-FROM node:24-alpine3.24@sha256:429bdfbc204b4eabc6438e6d34e4e9d8dd2ca1df8289bcd78cdd3c5db387b7a5 AS base
+FROM ghcr.io/ministryofjustice/devcontainer-base:4.2.1 AS ca
+
+FROM node:24-alpine3.24 AS base
 
 LABEL org.opencontainers.image.title="HMPPS Node.js Runtime Base Image"
 LABEL org.opencontainers.image.description="Runtime-only container image for HMPPS Node.js applications with package managers removed"
@@ -20,13 +22,16 @@ ARG APP_GID=2000
 
 
 # not able to pin tzdata version due to frequent updates and removal of old versions, not updating the apk index for tzdata prior to installation to avoid potential conflicts
+
+COPY  --from=ca /usr/local/share/ca-certificates/moj-root.crt /usr/local/share/ca-certificates/moj-root.crt
+
+RUN cp /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt.backup && cat /usr/local/share/ca-certificates/moj-root.crt >> /etc/ssl/certs/ca-certificates.crt
 RUN apk add --no-cache tzdata
 # renovate: datasource=repology depName=alpine_3_24/ca-certificates versioning=loose
-ARG CA_CERTIFICATES_VERSION=20260909-r0
+ARG CA_CERTIFICATES_VERSION=20261020-r0
 
 # renovate: datasource=repology depName=alpine_3_24/libstdc++ versioning=loose
 ARG LIBSTDCXX_VERSION=15.2.0-r5
-
 RUN apk update --no-cache -qq && apk add --no-cache \
         ca-certificates="${CA_CERTIFICATES_VERSION}" \
         libstdc++="${LIBSTDCXX_VERSION}" && \
