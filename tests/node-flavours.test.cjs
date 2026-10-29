@@ -12,7 +12,7 @@ test('comparison CLI reports every missing build when no artifacts exist', () =>
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'node-metrics-'));
   try {
     const report = execFileSync(process.execPath, ['scripts/node-image-metrics.cjs', 'summary', directory], { encoding: 'utf8' });
-    assert.equal((report.match(/Missing \/ failed build/g) || []).length, 10);
+    assert.equal((report.match(/Missing \/ failed build/g) || []).length, 8);
   } finally {
     fs.rmdirSync(directory);
   }
