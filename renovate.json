@@ -26,6 +26,12 @@
   "dependencyDashboard": true,
   "packageRules": [
     {
+      "matchDatasources": ["npm"],
+      "matchPackageNames": ["npm"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    },
+    {
       "matchManagers": ["npm"],
       "rangeStrategy": "bump",
       "minimumReleaseAge": "7 days"

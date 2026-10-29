@@ -46,7 +46,7 @@ These images are automatically built, scanned, and published to GitHub Container
 | `ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-26-npm12` | Docker Node.js 26/npm 12 build baseline with apk |
 | `ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-build-24-npm11-apko` | Apko Node.js 24 build image with Melange-packaged npm 11 and apk |
 | `ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-build-24-npm12-apko` | Apko Node.js 24 build image with Melange-packaged npm 12 and apk |
-| `ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-build-26-npm12-apko` | Apko Node.js 26 build image with Melange-packaged npm 12 and apk |
+| `ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-26-npm12-apko-build` | Apko Node.js 26 build image with Melange-packaged npm 12 and apk |
 | `ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-runtime-24` | Alpine runtime image with npm, yarn and corepack removed |
 | `ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-runtime-26` | Docker Node.js 26 runtime baseline; apk retained |
 | `ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-runtime-24-apko` | Apko Node.js 24 runtime without any package managers |

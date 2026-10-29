@@ -111,7 +111,7 @@ jobs:
             node_major: '24'
             npm_major: '12'
             flavour: build
-          - image_name: hardened-alpine-node-build-26-npm12-apko
+          - image_name: hardened-alpine-node-26-npm12-apko-build
             apko_config: images/node/alpine-runtime/apko.yaml
             melange_config: images/node/alpine/melange.npm12.yaml
             melange_package: hmpps-npm12=12.2.0-r0
@@ -128,12 +128,12 @@ jobs:
             comparison: runtime-24
             backend: docker
             node_major: '24'
-          - image_name: hardened-alpine-node-runtime-26
-            context: images/node/alpine-runtime
-            dockerfile: images/node/alpine-runtime/Dockerfile.node26
-            comparison: runtime-26
-            backend: docker
-            node_major: '26'
+          # - image_name: hardened-alpine-node-runtime-26
+          #   context: images/node/alpine-runtime
+          #   dockerfile: images/node/alpine-runtime/Dockerfile.node26
+          #   comparison: runtime-26
+          #   backend: docker
+          #   node_major: '26'
           - image_name: hardened-alpine-node-runtime-24-apko
             context: images/node/alpine-runtime
             apko_config: images/node/alpine-runtime/apko.yaml
@@ -143,12 +143,12 @@ jobs:
             backend: apko
             node_major: '24'
             flavour: runtime
-          - image_name: hardened-alpine-node-runtime-26-apko
-            apko_config: images/node/alpine-runtime/apko.yaml
-            comparison: runtime-26
-            backend: apko
-            node_major: '26'
-            flavour: runtime
+          # - image_name: hardened-alpine-node-runtime-26-apko
+          #   apko_config: images/node/alpine-runtime/apko.yaml
+          #   comparison: runtime-26
+          #   backend: apko
+          #   node_major: '26'
+          #   flavour: runtime
           - image_name: hardened-alpine-node-runtime-24-apko-scanners
             context: images/node/alpine-runtime
             apko_config: images/node/alpine-runtime/apko.yaml
@@ -296,6 +296,8 @@ jobs:
           MELANGE_PACKAGE: ${{ matrix.melange_package }}
           SCANNERS: ${{ matrix.scanners }}
           COMPARISON: ${{ matrix.comparison }}
+          NODE_MAJOR: ${{ matrix.node_major }}
+          NPM_MAJOR: ${{ matrix.npm_major }}
         run: |
           if [ ! -f "$GITHUB_WORKSPACE/$APKO_CONFIG" ]; then
             echo "::error file=$APKO_CONFIG::Apko configuration is missing from the checkout. Ensure it is committed."
@@ -322,6 +324,10 @@ jobs:
               "${extra_args[@]}" \
               "$APKO_CONFIG" hmpps-scanners:test /sbom/scanners.tar
             docker load --input "$RUNNER_TEMP/apko-sbom/scanners.tar"
+          fi
+          if [ -n "$COMPARISON" ]; then
+            IMAGE_REF=hmpps-scanners:test-amd64 BACKEND=apko \
+              node scripts/node-image-metrics.cjs validate
           fi
           if [ "$SCANNERS" = true ]; then
             docker run --rm --entrypoint /bin/sh hmpps-scanners:test-amd64 -ec '
@@ -442,11 +448,13 @@ jobs:
           path: node-metrics
           merge-multiple: true
       - name: Write side-by-side comparison
+        if: ${{ always() }}
         run: |
           mkdir -p node-metrics
           node scripts/node-image-metrics.cjs summary node-metrics > node-image-comparison.md
           cat node-image-comparison.md >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: ${{ always() }}
         with:
           name: node-image-comparison
           path: |

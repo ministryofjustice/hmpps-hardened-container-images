@@ -38,7 +38,7 @@ workflow's branch or release tag.
 |---------|--------------------------|--------------------------------|-------------------------------|
 | Node 24, npm 11.12.1 | `hardened-alpine-node-build-24-npm11-apko` | `hardened-alpine-node-24` | npm, npx, apk |
 | Node 24, npm 12.2.0 | `hardened-alpine-node-build-24-npm12-apko` | `hardened-alpine-node-24-npm12` | npm, npx, apk |
-| Node 26, npm 12.2.0 | `hardened-alpine-node-build-26-npm12-apko` | `hardened-alpine-node-26-npm12` | npm, npx, apk |
+| Node 26, npm 12.2.0 | `hardened-alpine-node-26-npm12-apko-build` | `hardened-alpine-node-26-npm12` | npm, npx, apk |
 | Node 24 runtime | `hardened-alpine-node-runtime-24-apko` | `hardened-alpine-node-runtime-24` | none |
 | Node 26 runtime | `hardened-alpine-node-runtime-26-apko` | `hardened-alpine-node-runtime-26` | none |
 
@@ -108,7 +108,7 @@ The workflow builds all five pairs and compares same-run AMD64 images in the
 `node-image-comparison` artifact include:
 
 - Snyk critical/high/medium/low finding counts, including application dependencies.
-- Uncompressed local Docker image size, in MiB.
+- Local Docker-reported image size (`docker image inspect`'s `Size`), in MiB.
 - Build-stage elapsed seconds, including cache restoration, assembly and publishing,
   excluding scanning.
 - Actual Node/npm versions and presence of apk, npm, npx, yarn, yarnpkg,

@@ -36,12 +36,7 @@ function validateVersions(result, major, npmMajor, backend) {
   }
 }
 
-function collect(env) {
-  const { IMAGE_REF, COMPARISON, BACKEND, NODE_MAJOR, NPM_MAJOR, BUILD_SECONDS, OUTPUT_DIR } = env;
-  for (const name of ['IMAGE_REF', 'COMPARISON', 'BACKEND', 'NODE_MAJOR', 'BUILD_SECONDS', 'OUTPUT_DIR']) {
-    if (!env[name]) throw new Error(`Missing ${name}`);
-  }
-  const inspection = JSON.parse(execFileSync('docker', ['image', 'inspect', IMAGE_REF], { encoding: 'utf8' }))[0];
+function probeRuntime(image) {
   const probe = `
     const { spawnSync } = require('node:child_process');
     const managers = Object.fromEntries(${JSON.stringify(managers)}.map(name =>
@@ -55,8 +50,19 @@ function collect(env) {
     console.log(JSON.stringify({node: process.version, runtimeArchitecture: process.arch, npm, managers}));
   `;
   const runtime = JSON.parse(execFileSync('docker', [
-    'run', '--rm', '--platform', 'linux/amd64', '--user', '0:0', '--entrypoint', 'node', IMAGE_REF, '-e', probe,
+    'run', '--rm', '--platform', 'linux/amd64', '--user', '0:0', '--entrypoint', 'node', image, '-e', probe,
   ], { encoding: 'utf8' }));
+  if (runtime.runtimeArchitecture !== 'x64') throw new Error('Comparison requires an AMD64 Node executable');
+  return runtime;
+}
+
+function collect(env) {
+  const { IMAGE_REF, COMPARISON, BACKEND, NODE_MAJOR, NPM_MAJOR, BUILD_SECONDS, OUTPUT_DIR } = env;
+  for (const name of ['IMAGE_REF', 'COMPARISON', 'BACKEND', 'NODE_MAJOR', 'BUILD_SECONDS', 'OUTPUT_DIR']) {
+    if (!env[name]) throw new Error(`Missing ${name}`);
+  }
+  const inspection = JSON.parse(execFileSync('docker', ['image', 'inspect', IMAGE_REF], { encoding: 'utf8' }))[0];
+  const runtime = probeRuntime(IMAGE_REF);
   validateVersions(runtime, NODE_MAJOR, NPM_MAJOR, BACKEND);
   const seconds = Number(BUILD_SECONDS);
   if (!Number.isFinite(seconds) || seconds < 0) throw new Error('Invalid build duration');
@@ -68,7 +74,6 @@ function collect(env) {
     scanStatus: env.SCAN_STATUS || 'unavailable',
   };
   if (result.architecture !== 'amd64') throw new Error('Comparison requires AMD64 images');
-  if (result.runtimeArchitecture !== 'x64') throw new Error('Image metadata and executable architecture disagree');
   if (result.scanStatus === 'success') {
     result.vulnerabilities = countVulnerabilities(JSON.parse(fs.readFileSync('snyk-results.json', 'utf8')));
   } else {
@@ -100,7 +105,7 @@ function summary(results) {
       lines.push(`| ${flavour} | ${backend} | ${r.node} | ${r.npm || 'none'} | ${present} | ${(r.bytes / 1048576).toFixed(1)} | ${r.seconds} | ${v?.critical ?? 'N/A'} | ${v?.high ?? 'N/A'} | ${v?.medium ?? 'N/A'} | ${v?.low ?? 'N/A'} |`);
     }
   }
-  lines.push('', 'Size is Docker-reported uncompressed local image size. Build duration includes cache restoration, package/image assembly and publishing, but excludes security scanning.',
+  lines.push('', 'Size is the local Docker image inspect Size field, measured with the same storage driver for both backends. Build duration includes cache restoration, package/image assembly and publishing, but excludes security scanning.',
     '', 'Vulnerability counts are Snyk findings (including application dependencies) at threshold low, not unique CVEs. N/A means the scan was unavailable or failed, never zero findings.',
     '', 'Alpine release, dependency versions, cache warmth and retained Docker package managers can differ; this is a measured comparison, not a feature-parity or vulnerability-reduction guarantee.',
     '', 'Version/package-manager probes run as numeric UID 0 to inspect all baselines consistently; they do not validate the default container user.',
@@ -111,11 +116,16 @@ function summary(results) {
 if (require.main === module) {
   const [command, directory] = process.argv.slice(2);
   if (command === 'collect') collect(process.env);
+  else if (command === 'validate') {
+    const { IMAGE_REF, NODE_MAJOR, NPM_MAJOR, BACKEND } = process.env;
+    if (!IMAGE_REF || !NODE_MAJOR || !BACKEND) throw new Error('validate requires IMAGE_REF, NODE_MAJOR and BACKEND');
+    validateVersions(probeRuntime(IMAGE_REF), NODE_MAJOR, NPM_MAJOR, BACKEND);
+  }
   else if (command === 'summary' && directory) {
     const results = fs.readdirSync(directory).filter(name => name.endsWith('.json')).map(name =>
       JSON.parse(fs.readFileSync(path.join(directory, name), 'utf8')));
     process.stdout.write(summary(results));
-  } else throw new Error('Usage: node scripts/node-image-metrics.cjs collect | summary <metrics-directory>');
+  } else throw new Error('Usage: node scripts/node-image-metrics.cjs validate | collect | summary <metrics-directory>');
 }
 
 module.exports = { countVulnerabilities, validateVersions, summary };
