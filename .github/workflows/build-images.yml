@@ -155,7 +155,7 @@ jobs:
         env:
           APKO_CONFIG: ${{ matrix.apko_config }}
           APKO_IMAGE_REF: ${{ steps.snyk_image.outputs.image_ref }}
-          APKO_ARCHES: ${{ (github.ref_type == 'tag' || github.event_name == 'schedule') && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
+          APKO_ARCHES: 'x86_64,arm64,amd64'
         run: |
           if [ ! -f "$GITHUB_WORKSPACE/$APKO_CONFIG" ]; then
             echo "::error file=$APKO_CONFIG::Apko configuration is missing from the checkout. Ensure it is committed."
