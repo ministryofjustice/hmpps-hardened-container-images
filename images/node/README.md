@@ -66,8 +66,10 @@ package-signing keys are required.
 
 The apko runtime currently runs as root; the `appuser` account (UID/GID 2000)
 is available for applications to select explicitly.
-Keep `alpine-baselayout-data` installed: it supplies the standard root account
-needed for the configured `run-as: root`.
+The apko accounts configuration uses numeric `run-as: 0`, so Docker runs as root
+without requiring a named root account or `alpine-baselayout-data`. Apko rejects
+explicit UID-0 user definitions. Use `--user 0:0`, not `--user root`, when
+overriding the user on this image.
 
 The `nodejs~24` constraint selects available Node.js 24 packages from Alpine
 3.24 without allowing an upgrade to Node 25 or later. npm, npx, Corepack, and

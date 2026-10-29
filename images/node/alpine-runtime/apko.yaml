@@ -4,11 +4,10 @@ contents:
     - https://dl-cdn.alpinelinux.org/alpine/v3.24/community
     - https://dl-cdn.alpinelinux.org/alpine/edge/community
   packages:
-    - alpine-baselayout-data
+    # - go=1.27.2-r0
     - alpine-release
-    # - apk-tools
+    - apk-tools
     - nodejs~24
-    - go=1.27.2-r0
     - ca-certificates=20261020-r0
     - ca-certificates-bundle=20261020-r0
     - libstdc++=15.2.0-r5
@@ -60,7 +59,7 @@ accounts:
       uid: 2000
       shell: /sbin/nologin
       homedir: /dev/null
-  run-as: root
+  run-as: 0
 
 entrypoint:
   command: node
