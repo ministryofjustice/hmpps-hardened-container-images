@@ -193,7 +193,7 @@ jobs:
           tags: |
             type=raw,value=${{ steps.snyk_image.outputs.image_tag }}
           labels: |
-            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.source=https://github.com/ministryofjustice/hmpps-hardened-container-images
             org.opencontainers.image.revision=${{ github.sha }}
 
       - name: Log in to GitHub Container Registry
@@ -294,7 +294,7 @@ jobs:
           COMPARISON: ${{ matrix.comparison }}
           NODE_MAJOR: ${{ matrix.node_major }}
           NPM_MAJOR: ${{ matrix.npm_major }}
-          SOURCE_REPOSITORY: ${{ github.server_url }}/${{ github.repository }}
+          SOURCE_REPOSITORY: https://github.com/ministryofjustice/hmpps-hardened-container-images
         run: |
           if [ ! -f "$GITHUB_WORKSPACE/$APKO_CONFIG" ]; then
             echo "::error file=$APKO_CONFIG::Apko configuration is missing from the checkout. Ensure it is committed."

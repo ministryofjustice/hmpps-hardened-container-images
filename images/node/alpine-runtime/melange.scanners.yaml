@@ -30,7 +30,7 @@ environment:
   environment:
     CGO_ENABLED: "0"
     GOTOOLCHAIN: local
-    GOPROXY: direct
+    GOPROXY: https://proxy.golang.org|direct
     GOSUMDB: sum.golang.org
     GODEBUG: http2client=0
     GOMODCACHE: /var/cache/melange/gomodcache
@@ -76,7 +76,6 @@ pipeline:
   - name: Compile public Snyk CLI
     runs: |
       test "$(go env GOVERSION)" = go1.27.2
-      export GOPROXY='https://proxy.golang.org|direct'
       npm install --global --prefix /tmp/snyk-npm npm@11.12.1 --no-audit --no-fund
       export PATH="/tmp/snyk-npm/bin:$PATH"
       cd snyk

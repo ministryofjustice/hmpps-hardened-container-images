@@ -164,12 +164,13 @@ alongside Go dependencies under `/var/cache/melange`.
 
 Melange compiles static binaries with `CGO_ENABLED=0` and
 `GOTOOLCHAIN=local`, verifying the embedded Go compiler version. Source archives
-are pinned by SHA-256; Go dependencies are downloaded directly from source repositories
-and verified against the source's module checksums and Go's checksum database
-(except Snyk's proxy-first build described above).
-`GOPROXY=direct` bypasses the module proxy, whose ZIP downloads repeatedly stall
-or truncate in the local network environment. Proxy-first fallback still waits
-for a stalled transfer to fail before trying the source repository.
+are pinned by SHA-256; all scanners use
+`GOPROXY=https://proxy.golang.org|direct` and verify dependencies against the
+source's module checksums and Go's checksum database. Proxy-first downloads are
+required because some pinned dependencies have unavailable source repositories
+or broken vanity-domain TLS, while their verified module archives remain cached
+by the Go proxy. The pipe enables direct fallback on proxy errors, including
+truncated transfers; it still waits for a stalled transfer to fail.
 Source downloads still undergo Go checksum
 verification; Git is installed only in the build guest. Final download or
 checksum failures still stop the build.
@@ -256,7 +257,7 @@ compiled dependencies rather than recompiling them. Skip Melange and rerun only
 apko when reusing an existing signed scanner APK for image-only changes.
 The scanner build sets `GODEBUG=http2client=0` to avoid HTTP/2 stream resets
 seen during module downloads through the local proxy; truncated downloads also
-are avoided by bypassing the module proxy as described above. TLS certificate and Go
+use direct fallback after proxy errors as described above. TLS certificate and Go
 module checksum verification remain enabled.
 When updating scanner versions in the recipe (including source checksums and linker version metadata),
 bump its package epoch and update the APK pin in CI and these commands. The
