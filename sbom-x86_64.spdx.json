@@ -1,0 +1,629 @@
+{
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "sbom-sha256:01ad29d43780b0d15b91814aabdaabff6dec43ca94dc4a8df23111d37faaa5de",
+  "spdxVersion": "SPDX-2.3",
+  "creationInfo": {
+    "created": "2026-10-23T11:51:38Z",
+    "creators": [
+      "Tool: apko (1.4.13)",
+      "Organization: Chainguard, Inc"
+    ],
+    "licenseListVersion": "3.27"
+  },
+  "dataLicense": "CC0-1.0",
+  "documentNamespace": "https://spdx.org/spdxdocs/apko/",
+  "documentDescribes": [
+    "SPDXRef-Package-Image-sha256-7515997c84d26df84b53090389c763d953bbc820abe1312988547c12b5f3df21"
+  ],
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Package-Image-sha256-7515997c84d26df84b53090389c763d953bbc820abe1312988547c12b5f3df21",
+      "name": "sha256:7515997c84d26df84b53090389c763d953bbc820abe1312988547c12b5f3df21",
+      "versionInfo": "sha256:7515997c84d26df84b53090389c763d953bbc820abe1312988547c12b5f3df21",
+      "filesAnalyzed": false,
+      "description": "apko container image",
+      "downloadLocation": "NOASSERTION",
+      "supplier": "Organization: apko-generated image",
+      "primaryPackagePurpose": "CONTAINER",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "7515997c84d26df84b53090389c763d953bbc820abe1312988547c12b5f3df21"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:oci/hmpps-node-runtime@sha256:7515997c84d26df84b53090389c763d953bbc820abe1312988547c12b5f3df21?arch=amd64\u0026mediaType=application%2Fvnd.oci.image.manifest.v1%2Bjson\u0026os=linux",
+          "referenceType": "purl"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-ImageLayer-sha256-01ad29d43780b0d15b91814aabdaabff6dec43ca94dc4a8df23111d37faaa5de",
+      "name": "sha256:01ad29d43780b0d15b91814aabdaabff6dec43ca94dc4a8df23111d37faaa5de",
+      "versionInfo": "unknown",
+      "filesAnalyzed": false,
+      "description": "apko operating system layer",
+      "downloadLocation": "NOASSERTION",
+      "supplier": "Organization: apko-generated image",
+      "primaryPackagePurpose": "CONTAINER",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:oci/hmpps-node-runtime@sha256:01ad29d43780b0d15b91814aabdaabff6dec43ca94dc4a8df23111d37faaa5de?arch=amd64\u0026mediaType=application%2Fvnd.oci.image.layer.v1.tar%2Bgzip\u0026os=linux",
+          "referenceType": "purl"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-OperatingSystem-unknown",
+      "name": "unknown",
+      "versionInfo": "unknown",
+      "filesAnalyzed": false,
+      "description": "Operating System",
+      "downloadLocation": "NOASSERTION",
+      "supplier": "Organization: apko-generated image",
+      "primaryPackagePurpose": "OPERATING_SYSTEM"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-musl-1.2.6-r3",
+      "name": "musl",
+      "versionInfo": "1.2.6-r3",
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "MIT",
+      "description": "the musl c library (libc) implementation",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: apko-generated image",
+      "supplier": "Organization: apko-generated image",
+      "sourceInfo": "Package info from apk database",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:apk/unknown/musl@1.2.6-r3?arch=x86_64",
+          "referenceType": "purl"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-libgcc-15.2.0-r5",
+      "name": "libgcc",
+      "versionInfo": "15.2.0-r5",
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "GPL-2.0-or-later AND LGPL-2.1-or-later",
+      "description": "GNU C compiler runtime libraries",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: apko-generated image",
+      "supplier": "Organization: apko-generated image",
+      "sourceInfo": "Package info from apk database",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:apk/unknown/libgcc@15.2.0-r5?arch=x86_64",
+          "referenceType": "purl"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-libstdcC43C43-15.2.0-r5",
+      "name": "libstdc++",
+      "versionInfo": "15.2.0-r5",
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "GPL-2.0-or-later AND LGPL-2.1-or-later",
+      "description": "GNU C++ standard runtime library",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: apko-generated image",
+      "supplier": "Organization: apko-generated image",
+      "sourceInfo": "Package info from apk database",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:apk/unknown/libstdc%2B%2B@15.2.0-r5?arch=x86_64",
+          "referenceType": "purl"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-ada-libs-4.0.0-r0",
+      "name": "ada-libs",
+      "versionInfo": "4.0.0-r0",
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "( Apache-2.0 OR MIT ) AND MPL-2.0",
+      "description": "WHATWG-compliant and fast URL parser written in modern C++ (libraries)",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: apko-generated image",
+      "supplier": "Organization: apko-generated image",
+      "sourceInfo": "Package info from apk database",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:apk/unknown/ada-libs@4.0.0-r0?arch=x86_64",
+          "referenceType": "purl"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-brotli-libs-1.2.1-r0",
+      "name": "brotli-libs",
+      "versionInfo": "1.2.1-r0",
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "MIT",
+      "description": "Generic lossless compressor (libraries)",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: apko-generated image",
+      "supplier": "Organization: apko-generated image",
+      "sourceInfo": "Package info from apk database",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:apk/unknown/brotli-libs@1.2.1-r0?arch=x86_64",
+          "referenceType": "purl"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-busybox-1.37.0-r31",
+      "name": "busybox",
+      "versionInfo": "1.37.0-r31",
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "GPL-2.0-only",
+      "description": "Size optimized toolbox of many common UNIX utilities",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: apko-generated image",
+      "supplier": "Organization: apko-generated image",
+      "sourceInfo": "Package info from apk database",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:apk/unknown/busybox@1.37.0-r31?arch=x86_64",
+          "referenceType": "purl"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-busybox-binsh-1.37.0-r31",
+      "name": "busybox-binsh",
+      "versionInfo": "1.37.0-r31",
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "GPL-2.0-only",
+      "description": "busybox ash /bin/sh",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: apko-generated image",
+      "supplier": "Organization: apko-generated image",
+      "sourceInfo": "Package info from apk database",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:apk/unknown/busybox-binsh@1.37.0-r31?arch=noarch",
+          "referenceType": "purl"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-c-ares-1.34.9-r0",
+      "name": "c-ares",
+      "versionInfo": "1.34.9-r0",
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "MIT",
+      "description": "Asynchronous DNS/names resolver library",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: apko-generated image",
+      "supplier": "Organization: apko-generated image",
+      "sourceInfo": "Package info from apk database",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:apk/unknown/c-ares@1.34.9-r0?arch=x86_64",
+          "referenceType": "purl"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-libcrypto3-3.5.9-r0",
+      "name": "libcrypto3",
+      "versionInfo": "3.5.9-r0",
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "Apache-2.0",
+      "description": "Crypto library from openssl",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: apko-generated image",
+      "supplier": "Organization: apko-generated image",
+      "sourceInfo": "Package info from apk database",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:apk/unknown/libcrypto3@3.5.9-r0?arch=x86_64",
+          "referenceType": "purl"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-ca-certificates-20261020-r0",
+      "name": "ca-certificates",
+      "versionInfo": "20261020-r0",
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "MPL-2.0 AND MIT",
+      "description": "Common CA certificates PEM files from Mozilla",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: apko-generated image",
+      "supplier": "Organization: apko-generated image",
+      "sourceInfo": "Package info from apk database",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:apk/unknown/ca-certificates@20261020-r0?arch=x86_64",
+          "referenceType": "purl"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-icu-data-en-78.1-r0",
+      "name": "icu-data-en",
+      "versionInfo": "78.1-r0",
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "ICU",
+      "description": "Stripped down ICU data with only en_US/GB locale and no legacy charset converters",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: apko-generated image",
+      "supplier": "Organization: apko-generated image",
+      "sourceInfo": "Package info from apk database",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:apk/unknown/icu-data-en@78.1-r0?arch=noarch",
+          "referenceType": "purl"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-icu-libs-78.1-r0",
+      "name": "icu-libs",
+      "versionInfo": "78.1-r0",
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "ICU",
+      "description": "International Components for Unicode library (libraries)",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: apko-generated image",
+      "supplier": "Organization: apko-generated image",
+      "sourceInfo": "Package info from apk database",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:apk/unknown/icu-libs@78.1-r0?arch=x86_64",
+          "referenceType": "purl"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-libssl3-3.5.9-r0",
+      "name": "libssl3",
+      "versionInfo": "3.5.9-r0",
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "Apache-2.0",
+      "description": "SSL shared libraries",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: apko-generated image",
+      "supplier": "Organization: apko-generated image",
+      "sourceInfo": "Package info from apk database",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:apk/unknown/libssl3@3.5.9-r0?arch=x86_64",
+          "referenceType": "purl"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-nghttp2-libs-1.70.0-r0",
+      "name": "nghttp2-libs",
+      "versionInfo": "1.70.0-r0",
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "MIT",
+      "description": "HTTP/2 C client, server and proxy (libraries)",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: apko-generated image",
+      "supplier": "Organization: apko-generated image",
+      "sourceInfo": "Package info from apk database",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:apk/unknown/nghttp2-libs@1.70.0-r0?arch=x86_64",
+          "referenceType": "purl"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-simdjson-4.2.4-r0",
+      "name": "simdjson",
+      "versionInfo": "4.2.4-r0",
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "Apache-2.0 OR MIT",
+      "description": "Parsing gigabytes of JSON per second",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: apko-generated image",
+      "supplier": "Organization: apko-generated image",
+      "sourceInfo": "Package info from apk database",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:apk/unknown/simdjson@4.2.4-r0?arch=x86_64",
+          "referenceType": "purl"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-simdutf-9.0.0-r0",
+      "name": "simdutf",
+      "versionInfo": "9.0.0-r0",
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "Apache-2.0 OR MIT",
+      "description": "Unicode validation and transcoding at billions of characters per second",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: apko-generated image",
+      "supplier": "Organization: apko-generated image",
+      "sourceInfo": "Package info from apk database",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:apk/unknown/simdutf@9.0.0-r0?arch=x86_64",
+          "referenceType": "purl"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-sqlite-libs-3.53.4-r0",
+      "name": "sqlite-libs",
+      "versionInfo": "3.53.4-r0",
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "blessing",
+      "description": "C library that implements an SQL database engine (libraries)",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: apko-generated image",
+      "supplier": "Organization: apko-generated image",
+      "sourceInfo": "Package info from apk database",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:apk/unknown/sqlite-libs@3.53.4-r0?arch=x86_64",
+          "referenceType": "purl"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-zlib-1.3.2-r1",
+      "name": "zlib",
+      "versionInfo": "1.3.2-r1",
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "Zlib",
+      "description": "A compression/decompression Library",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: apko-generated image",
+      "supplier": "Organization: apko-generated image",
+      "sourceInfo": "Package info from apk database",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:apk/unknown/zlib@1.3.2-r1?arch=x86_64",
+          "referenceType": "purl"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-zstd-libs-1.5.7-r2",
+      "name": "zstd-libs",
+      "versionInfo": "1.5.7-r2",
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "BSD-3-Clause OR GPL-2.0-or-later",
+      "description": "Zstandard - Fast real-time compression algorithm (libraries)",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: apko-generated image",
+      "supplier": "Organization: apko-generated image",
+      "sourceInfo": "Package info from apk database",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:apk/unknown/zstd-libs@1.5.7-r2?arch=x86_64",
+          "referenceType": "purl"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-nodejs-24.22.1-r0",
+      "name": "nodejs",
+      "versionInfo": "24.22.1-r0",
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "MIT",
+      "description": "JavaScript runtime built on V8 engine - LTS version",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: apko-generated image",
+      "supplier": "Organization: apko-generated image",
+      "sourceInfo": "Package info from apk database",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:apk/unknown/nodejs@24.22.1-r0?arch=x86_64",
+          "referenceType": "purl"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-tzdata-2026e-r0",
+      "name": "tzdata",
+      "versionInfo": "2026e-r0",
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "LicenseRef-apk-Public-Domain",
+      "description": "Timezone data",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: apko-generated image",
+      "supplier": "Organization: apko-generated image",
+      "sourceInfo": "Package info from apk database",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:apk/unknown/tzdata@2026e-r0?arch=noarch",
+          "referenceType": "purl"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-Package-Image-sha256-7515997c84d26df84b53090389c763d953bbc820abe1312988547c12b5f3df21",
+      "relationshipType": "CONTAINS",
+      "relatedSpdxElement": "SPDXRef-Package-ImageLayer-sha256-01ad29d43780b0d15b91814aabdaabff6dec43ca94dc4a8df23111d37faaa5de"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-Image-sha256-7515997c84d26df84b53090389c763d953bbc820abe1312988547c12b5f3df21",
+      "relationshipType": "CONTAINS",
+      "relatedSpdxElement": "SPDXRef-Package-musl-1.2.6-r3"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-Image-sha256-7515997c84d26df84b53090389c763d953bbc820abe1312988547c12b5f3df21",
+      "relationshipType": "CONTAINS",
+      "relatedSpdxElement": "SPDXRef-Package-libgcc-15.2.0-r5"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-Image-sha256-7515997c84d26df84b53090389c763d953bbc820abe1312988547c12b5f3df21",
+      "relationshipType": "CONTAINS",
+      "relatedSpdxElement": "SPDXRef-Package-libstdcC43C43-15.2.0-r5"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-Image-sha256-7515997c84d26df84b53090389c763d953bbc820abe1312988547c12b5f3df21",
+      "relationshipType": "CONTAINS",
+      "relatedSpdxElement": "SPDXRef-Package-ada-libs-4.0.0-r0"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-Image-sha256-7515997c84d26df84b53090389c763d953bbc820abe1312988547c12b5f3df21",
+      "relationshipType": "CONTAINS",
+      "relatedSpdxElement": "SPDXRef-Package-brotli-libs-1.2.1-r0"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-Image-sha256-7515997c84d26df84b53090389c763d953bbc820abe1312988547c12b5f3df21",
+      "relationshipType": "CONTAINS",
+      "relatedSpdxElement": "SPDXRef-Package-busybox-1.37.0-r31"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-Image-sha256-7515997c84d26df84b53090389c763d953bbc820abe1312988547c12b5f3df21",
+      "relationshipType": "CONTAINS",
+      "relatedSpdxElement": "SPDXRef-Package-busybox-binsh-1.37.0-r31"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-Image-sha256-7515997c84d26df84b53090389c763d953bbc820abe1312988547c12b5f3df21",
+      "relationshipType": "CONTAINS",
+      "relatedSpdxElement": "SPDXRef-Package-c-ares-1.34.9-r0"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-Image-sha256-7515997c84d26df84b53090389c763d953bbc820abe1312988547c12b5f3df21",
+      "relationshipType": "CONTAINS",
+      "relatedSpdxElement": "SPDXRef-Package-libcrypto3-3.5.9-r0"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-Image-sha256-7515997c84d26df84b53090389c763d953bbc820abe1312988547c12b5f3df21",
+      "relationshipType": "CONTAINS",
+      "relatedSpdxElement": "SPDXRef-Package-ca-certificates-20261020-r0"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-Image-sha256-7515997c84d26df84b53090389c763d953bbc820abe1312988547c12b5f3df21",
+      "relationshipType": "CONTAINS",
+      "relatedSpdxElement": "SPDXRef-Package-icu-data-en-78.1-r0"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-Image-sha256-7515997c84d26df84b53090389c763d953bbc820abe1312988547c12b5f3df21",
+      "relationshipType": "CONTAINS",
+      "relatedSpdxElement": "SPDXRef-Package-icu-libs-78.1-r0"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-Image-sha256-7515997c84d26df84b53090389c763d953bbc820abe1312988547c12b5f3df21",
+      "relationshipType": "CONTAINS",
+      "relatedSpdxElement": "SPDXRef-Package-libssl3-3.5.9-r0"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-Image-sha256-7515997c84d26df84b53090389c763d953bbc820abe1312988547c12b5f3df21",
+      "relationshipType": "CONTAINS",
+      "relatedSpdxElement": "SPDXRef-Package-nghttp2-libs-1.70.0-r0"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-Image-sha256-7515997c84d26df84b53090389c763d953bbc820abe1312988547c12b5f3df21",
+      "relationshipType": "CONTAINS",
+      "relatedSpdxElement": "SPDXRef-Package-simdjson-4.2.4-r0"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-Image-sha256-7515997c84d26df84b53090389c763d953bbc820abe1312988547c12b5f3df21",
+      "relationshipType": "CONTAINS",
+      "relatedSpdxElement": "SPDXRef-Package-simdutf-9.0.0-r0"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-Image-sha256-7515997c84d26df84b53090389c763d953bbc820abe1312988547c12b5f3df21",
+      "relationshipType": "CONTAINS",
+      "relatedSpdxElement": "SPDXRef-Package-sqlite-libs-3.53.4-r0"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-Image-sha256-7515997c84d26df84b53090389c763d953bbc820abe1312988547c12b5f3df21",
+      "relationshipType": "CONTAINS",
+      "relatedSpdxElement": "SPDXRef-Package-zlib-1.3.2-r1"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-Image-sha256-7515997c84d26df84b53090389c763d953bbc820abe1312988547c12b5f3df21",
+      "relationshipType": "CONTAINS",
+      "relatedSpdxElement": "SPDXRef-Package-zstd-libs-1.5.7-r2"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-Image-sha256-7515997c84d26df84b53090389c763d953bbc820abe1312988547c12b5f3df21",
+      "relationshipType": "CONTAINS",
+      "relatedSpdxElement": "SPDXRef-Package-nodejs-24.22.1-r0"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-Image-sha256-7515997c84d26df84b53090389c763d953bbc820abe1312988547c12b5f3df21",
+      "relationshipType": "CONTAINS",
+      "relatedSpdxElement": "SPDXRef-Package-tzdata-2026e-r0"
+    }
+  ],
+  "hasExtractedLicensingInfos": [
+    {
+      "licenseId": "LicenseRef-apk-Public-Domain",
+      "extractedText": "Public-Domain"
+    }
+  ]
+}

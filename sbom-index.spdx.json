@@ -1,0 +1,101 @@
+{
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "sbom-sha256:9ecedea9a481c825b34a1c14a36256b2b5540911554f31235171795de888253b",
+  "spdxVersion": "SPDX-2.3",
+  "creationInfo": {
+    "created": "2026-10-23T11:51:38Z",
+    "creators": [
+      "Tool: apko (1.4.13)",
+      "Organization: Chainguard, Inc"
+    ],
+    "licenseListVersion": "3.27"
+  },
+  "dataLicense": "CC0-1.0",
+  "documentNamespace": "https://spdx.org/spdxdocs/apko/",
+  "documentDescribes": [
+    "SPDXRef-Package-sha256-9ecedea9a481c825b34a1c14a36256b2b5540911554f31235171795de888253b"
+  ],
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Package-sha256-9ecedea9a481c825b34a1c14a36256b2b5540911554f31235171795de888253b",
+      "name": "sha256:9ecedea9a481c825b34a1c14a36256b2b5540911554f31235171795de888253b",
+      "versionInfo": "sha256:9ecedea9a481c825b34a1c14a36256b2b5540911554f31235171795de888253b",
+      "filesAnalyzed": false,
+      "description": "Multi-arch image index",
+      "downloadLocation": "NOASSERTION",
+      "supplier": "Organization: Chainguard, Inc.",
+      "sourceInfo": "Generated at image build time by apko",
+      "primaryPackagePurpose": "CONTAINER",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "9ecedea9a481c825b34a1c14a36256b2b5540911554f31235171795de888253b"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:oci/hmpps-node-runtime@sha256:9ecedea9a481c825b34a1c14a36256b2b5540911554f31235171795de888253b?mediaType=application%2Fvnd.oci.image.index.v1%2Bjson",
+          "referenceType": "purl"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-sha256-7515997c84d26df84b53090389c763d953bbc820abe1312988547c12b5f3df21",
+      "name": "sha256:7515997c84d26df84b53090389c763d953bbc820abe1312988547c12b5f3df21",
+      "versionInfo": "sha256:7515997c84d26df84b53090389c763d953bbc820abe1312988547c12b5f3df21",
+      "filesAnalyzed": false,
+      "downloadLocation": "NOASSERTION",
+      "supplier": "Organization: Chainguard, Inc.",
+      "primaryPackagePurpose": "CONTAINER",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "7515997c84d26df84b53090389c763d953bbc820abe1312988547c12b5f3df21"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:oci/hmpps-node-runtime@sha256:7515997c84d26df84b53090389c763d953bbc820abe1312988547c12b5f3df21?arch=amd64\u0026mediaType=application%2Fvnd.oci.image.manifest.v1%2Bjson\u0026os=linux",
+          "referenceType": "purl"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-https-C47C47github.comC47ministryofjusticeC47hmpps-hardened-container-images.gitC64a2ea405e8aa9d7babafd1a51461ca47a2b6a4ba1",
+      "name": "github.com/ministryofjustice/hmpps-hardened-container-images.git",
+      "versionInfo": "a2ea405e8aa9d7babafd1a51461ca47a2b6a4ba1",
+      "filesAnalyzed": false,
+      "description": "Image configuration source",
+      "downloadLocation": "https://github.com/ministryofjustice/hmpps-hardened-container-images.git@a2ea405e8aa9d7babafd1a51461ca47a2b6a4ba1",
+      "supplier": "Organization: Chainguard, Inc.",
+      "primaryPackagePurpose": "SOURCE",
+      "checksums": [
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "a2ea405e8aa9d7babafd1a51461ca47a2b6a4ba1"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:github/ministryofjustice/hmpps-hardened-container-images@a2ea405e8aa9d7babafd1a51461ca47a2b6a4ba1",
+          "referenceType": "purl"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-Package-sha256-9ecedea9a481c825b34a1c14a36256b2b5540911554f31235171795de888253b",
+      "relationshipType": "VARIANT_OF",
+      "relatedSpdxElement": "SPDXRef-Package-sha256-7515997c84d26df84b53090389c763d953bbc820abe1312988547c12b5f3df21"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-sha256-9ecedea9a481c825b34a1c14a36256b2b5540911554f31235171795de888253b",
+      "relationshipType": "GENERATED_FROM",
+      "relatedSpdxElement": "SPDXRef-Package-https-C47C47github.comC47ministryofjusticeC47hmpps-hardened-container-images.gitC64a2ea405e8aa9d7babafd1a51461ca47a2b6a4ba1"
+    }
+  ]
+}
