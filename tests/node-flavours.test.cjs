@@ -56,8 +56,8 @@ test('comparison pairs configured flavours and distinguishes missing scans from 
   ]);
   assert.match(report, /10\.0 \| 42 \| N\/A \| N\/A \| N\/A \| N\/A/);
   assert.match(report, /5\.0 \| 21 \| 0 \| 2 \| 3 \| 4/);
-  assert.equal((report.match(/Missing \/ failed build/g) || []).length, 6);
-  assert.match(report, /runtime-24/);
+  assert.equal((report.match(/Missing \/ failed build/g) || []).length, 8);
+  assert.match(report, /runtime-26/);
   assert.throws(() => summary([
     { comparison: 'runtime-24', backend: 'apko' },
     { comparison: 'runtime-24', backend: 'apko' },
@@ -95,7 +95,7 @@ test('workflow covers matching Docker/apko pairs with correctly pinned npm APKs'
   const matrix = workflow.jobs['build-scan-push'].strategy.matrix.include;
   const comparisons = matrix.filter(entry => entry.comparison);
   assert.equal(comparisons.length, 10);
-  for (const flavour of ['build-24-npm11', 'build-24-npm12', 'build-26-npm12', 'runtime-24']) {
+  for (const flavour of ['build-24-npm11', 'build-24-npm12', 'build-26-npm12', 'runtime-24', 'runtime-26']) {
     assert.deepEqual(comparisons.filter(entry => entry.comparison === flavour).map(entry => entry.backend).sort(), ['apko', 'docker']);
   }
   for (const entry of comparisons.filter(entry => entry.backend === 'apko' && entry.flavour === 'build')) {

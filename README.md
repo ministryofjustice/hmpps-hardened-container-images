@@ -59,11 +59,10 @@ required if an existing package does not inherit repository access.
 | `ghcr.io/ministryofjustice/hmpps-hardened-container-images/node-alpine:26-npm12-apko-main` | Apko Node.js 26 build image with Melange-packaged npm 12 and apk |
 | `ghcr.io/ministryofjustice/hmpps-hardened-container-images/node-alpine-runtime:24-docker-main` | Existing Docker Node.js 24 runtime baseline |
 | `ghcr.io/ministryofjustice/hmpps-hardened-container-images/node-alpine-runtime:24-apko-main` | Apko Node.js 24 runtime without any package managers |
+| `ghcr.io/ministryofjustice/hmpps-hardened-container-images/node-alpine-runtime:26-docker-main` | Docker Node.js 26 runtime baseline; apk retained |
+| `ghcr.io/ministryofjustice/hmpps-hardened-container-images/node-alpine-runtime:26-apko-main` | Apko Node.js 26 runtime without any package managers |
 | `ghcr.io/ministryofjustice/hmpps-hardened-container-images/node-alpine-runtime:24-scanners-apko-main` | Apko Node runtime with Scorecard, Conftest, Betterleaks, Hadolint and Snyk; no Go toolchain |
 | `ghcr.io/ministryofjustice/hmpps-hardened-container-images/node-distroless:24-docker-main` | Distroless Node.js 24 |
-
-Node 26 runtime Docker/apko recipes remain available for local builds but their
-pipeline entries are currently disabled.
 
 See [Node flavours and comparison reports](images/node/README.md) for local builds
 and pipeline measurements of vulnerabilities, image size, build duration, versions

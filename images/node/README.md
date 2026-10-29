@@ -44,9 +44,7 @@ is produced.
 | Node 24, npm 12.2.0 | `node-alpine:24-npm12-apko` | `node-alpine:24-npm12-docker` | npm, npx, apk |
 | Node 26, npm 12.2.0 | `node-alpine:26-npm12-apko` | `node-alpine:26-npm12-docker` | npm, npx, apk |
 | Node 24 runtime | `node-alpine-runtime:24-apko` | `node-alpine-runtime:24-docker` | none |
-
-Node 26 runtime recipes are available locally but both publishing entries are
-currently disabled; this refactor does not re-enable them.
+| Node 26 runtime | `node-alpine-runtime:26-apko` | `node-alpine-runtime:26-docker` | none |
 
 There is deliberately no Node 26/npm 11 flavour. The existing Docker Node 24
 runtime is unchanged; the comparison reports its actual package managers rather
@@ -109,7 +107,7 @@ The images run as numeric UID 0 by default; `appuser` is available via
 
 ### CI comparisons
 
-The workflow builds the four enabled pairs and compares same-run AMD64 images in the
+The workflow builds all five pairs and compares same-run AMD64 images in the
 **Compare Docker and apko/Melange Node images** job. Its job summary and
 `node-image-comparison` artifact include:
 

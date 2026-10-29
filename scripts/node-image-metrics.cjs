@@ -90,7 +90,7 @@ function summary(results) {
     '| Flavour | Build | Node | npm | Package managers present | Size (MiB) | Build (s) | Critical | High | Medium | Low |',
     '|---|---|---|---|---|---:|---:|---:|---:|---:|---:|',
   ];
-  const expected = ['build-24-npm11', 'build-24-npm12', 'build-26-npm12', 'runtime-24'];
+  const expected = ['build-24-npm11', 'build-24-npm12', 'build-26-npm12', 'runtime-24', 'runtime-26'];
   for (const flavour of expected) {
     for (const backend of ['docker', 'apko']) {
       const matches = results.filter(r => r.comparison === flavour && r.backend === backend);
