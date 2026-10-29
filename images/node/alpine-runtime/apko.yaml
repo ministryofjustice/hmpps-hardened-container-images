@@ -5,7 +5,7 @@ contents:
     - https://dl-cdn.alpinelinux.org/alpine/edge/community
   packages:
     - alpine-release
-    - apk-tools
+    # - apk-tools
     - nodejs~24
     - ca-certificates=20261020-r0
     - ca-certificates-bundle=20261020-r0

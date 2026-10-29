@@ -6,7 +6,8 @@ abort 'Usage: ruby scripts/render-node-apko.rb <24|26> <build|runtime> <output.y
 
 base = File.expand_path('../images/node/alpine-runtime/apko.yaml', __dir__)
 config = YAML.load_file(base)
-config['contents']['packages'].delete('apk-tools') if flavour == 'runtime'
+config['contents']['packages'].delete('apk-tools')
+config['contents']['packages'] << 'apk-tools' if flavour == 'build'
 config['contents']['packages'].map! do |package|
   package == 'nodejs~24' && major == '26' ? 'nodejs-current~26' : package
 end

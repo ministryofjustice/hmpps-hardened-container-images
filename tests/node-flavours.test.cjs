@@ -72,12 +72,13 @@ test('checks Node/npm majors and requires both npm and apk in builds', () => {
   assert.throws(() => validateVersions({ ...runtime, managers: { ...managers, apk: false } }, '24', '11', 'apko'));
 });
 
-test('apko runtimes reject every package manager while Docker baselines remain observational', () => {
-  for (const manager of Object.keys(managers)) {
-    assert.throws(() => validateVersions({ node: 'v26.12.1', managers: { [manager]: true } }, '26', '', 'apko'));
+test('Docker and apko runtimes reject every package manager', () => {
+  for (const backend of ['docker', 'apko']) {
+    for (const manager of Object.keys(managers)) {
+      assert.throws(() => validateVersions({ node: 'v26.12.1', managers: { [manager]: true } }, '26', '', backend));
+    }
+    validateVersions({ node: 'v26.12.1', managers: {} }, '26', '', backend);
   }
-  validateVersions({ node: 'v26.12.1', managers: {} }, '26', '', 'apko');
-  validateVersions({ node: 'v24.22.1', managers }, '24', '', 'docker');
 });
 
 test('comparison pairs configured flavours and distinguishes missing scans from zero findings', () => {
@@ -117,6 +118,48 @@ test('rendering keeps shared trust/accounts and isolates all five flavour contra
   } finally {
     fs.rmSync(directory, { recursive: true });
   }
+});
+
+test('comparison ticks rank severity before totals and handle ties or unavailable counterparts', () => {
+  const row = (backend, vulnerabilities, scanStatus = 'success') => ({
+    comparison: 'runtime-24', backend, vulnerabilities, scanStatus,
+    node: 'v24.22.1', managers: {}, bytes: 1048576, seconds: 1,
+  });
+  const counts = (critical, high, medium, low) => ({ critical, high, medium, low });
+  const dockerLine = report => report.split('\n').find(line => line.startsWith('| runtime-24 | docker |'));
+  const apkoLine = report => report.split('\n').find(line => line.startsWith('| runtime-24 | apko |'));
+  for (const [docker, apko] of [
+    [counts(1, 0, 0, 0), counts(0, 100, 100, 100)],
+    [counts(0, 1, 0, 0), counts(0, 0, 100, 100)],
+    [counts(0, 0, 1, 0), counts(0, 0, 0, 100)],
+    [counts(0, 0, 0, 1), counts(0, 0, 0, 0)],
+  ]) {
+    const report = summary([row('docker', docker), row('apko', apko)]);
+    assert.match(apkoLine(report), /✅ Fewer findings/);
+    assert.match(dockerLine(report), /More findings/);
+    const reversed = summary([row('docker', apko), row('apko', docker)]);
+    assert.match(dockerLine(reversed), /✅ Fewer findings/);
+  }
+  const zero = counts(0, 0, 0, 0);
+  assert.match(dockerLine(summary([row('docker', zero), row('apko', zero)])), /Tie/);
+  for (const counterpart of [undefined, row('apko', null), row('apko', zero, 'failure')]) {
+    const report = summary([row('docker', zero), ...(counterpart ? [counterpart] : [])]);
+    assert.match(dockerLine(report), /Cannot compare/);
+    assert.doesNotMatch(dockerLine(report), /✅/);
+  }
+  assert.throws(() => summary([row('docker', counts(-1, 0, 0, 0)), row('apko', zero)]), /Invalid critical/);
+});
+
+test('per-flavour reports include only their pair while the full report retains every pair', () => {
+  const flavours = ['build-24-npm11', 'build-24-npm12', 'build-26-npm12', 'runtime-24', 'runtime-26'];
+  for (const flavour of flavours) {
+    const report = summary([], flavour);
+    assert.equal(report.split('\n').filter(line => /^\| (build-|runtime-)/.test(line)).length, 2);
+    assert.match(report, new RegExp(`AMD64\\): ${flavour}`));
+    for (const other of flavours.filter(value => value !== flavour)) assert.ok(!report.includes(other));
+  }
+  assert.equal(summary([]).split('\n').filter(line => /^\| (build-|runtime-)/.test(line)).length, 10);
+  assert.throws(() => summary([], 'invalid'), /Unknown comparison flavour/);
 });
 
 test('workflow covers matching Docker/apko pairs with correctly pinned npm APKs', () => {

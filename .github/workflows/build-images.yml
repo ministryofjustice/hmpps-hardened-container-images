@@ -450,6 +450,7 @@ jobs:
     env:
       MELANGE_CONFIG: images/node/alpine-runtime/melange.scanners.yaml
       MELANGE_ARCHES: ${{ matrix.arch }}
+      MELANGE_KEY_NAME: melange-${{ matrix.arch }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Restore native compilation cache
@@ -468,8 +469,6 @@ jobs:
             *) echo "::error::Scanner runner does not match target architecture"; exit 1 ;;
           esac
           bash scripts/build-melange.sh
-          mv "$RUNNER_TEMP/scanner-keys/melange.rsa.pub" \
-            "$RUNNER_TEMP/scanner-keys/melange-${MELANGE_ARCHES}.rsa.pub"
       - name: Upload signed APK and public key
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
@@ -545,11 +544,15 @@ jobs:
           mkdir -p node-metrics
           node scripts/node-image-metrics.cjs summary node-metrics > node-image-comparison.md
           cat node-image-comparison.md >> "$GITHUB_STEP_SUMMARY"
+          for flavour in build-24-npm11 build-24-npm12 build-26-npm12 runtime-24 runtime-26; do
+            node scripts/node-image-metrics.cjs summary node-metrics "$flavour" \
+              > "node-image-comparison-$flavour.md"
+          done
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: ${{ always() }}
         with:
           name: node-image-comparison
           path: |
-            node-image-comparison.md
+            node-image-comparison*.md
             node-metrics/*.json
           if-no-files-found: error

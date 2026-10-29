@@ -37,7 +37,7 @@ function validateVersions(result, major, npmMajor, backend) {
         !result.managers.apk || !result.managers.npx) {
       throw new Error(`Expected npm ${npmMajor}, npx and apk: ${JSON.stringify(result)}`);
     }
-  } else if (backend === 'apko' && Object.values(result.managers).some(Boolean)) {
+  } else if (Object.values(result.managers).some(Boolean)) {
     throw new Error(`Runtime contains a package manager: ${JSON.stringify(result.managers)}`);
   }
 }
@@ -89,38 +89,71 @@ function collect(env) {
   fs.writeFileSync(path.join(OUTPUT_DIR, `${COMPARISON}-${BACKEND}.json`), JSON.stringify(result, null, 2));
 }
 
-function summary(results) {
+const comparisonFlavours = ['build-24-npm11', 'build-24-npm12', 'build-26-npm12', 'runtime-24', 'runtime-26'];
+
+function summary(results, flavourFilter) {
+  if (flavourFilter !== undefined && !comparisonFlavours.includes(flavourFilter)) {
+    throw new Error(`Unknown comparison flavour: ${flavourFilter}`);
+  }
   const lines = [
-    '## Node image comparison (AMD64)',
+    `## Node image comparison (AMD64)${flavourFilter ? `: ${flavourFilter}` : ''}`,
     '',
-    '| Flavour | Build | Node | npm | Package managers present | Size (MiB) | Build (s) | Critical | High | Medium | Low |',
-    '|---|---|---|---|---|---:|---:|---:|---:|---:|---:|',
+    '| Flavour | Build | Node | npm | Package managers present | Size (MiB) | Build (s) | Critical | High | Medium | Low | Snyk comparison |',
+    '|---|---|---|---|---|---:|---:|---:|---:|---:|---:|---|',
   ];
-  const expected = ['build-24-npm11', 'build-24-npm12', 'build-26-npm12', 'runtime-24', 'runtime-26'];
+  const expected = flavourFilter ? [flavourFilter] : comparisonFlavours;
   for (const flavour of expected) {
+    const pair = {};
     for (const backend of ['docker', 'apko']) {
       const matches = results.filter(r => r.comparison === flavour && r.backend === backend);
       if (matches.length > 1) throw new Error(`Duplicate metrics for ${flavour}/${backend}`);
-      const r = matches[0];
+      pair[backend] = matches[0];
+    }
+    const indicators = { docker: 'Cannot compare', apko: 'Cannot compare' };
+    const severities = ['critical', 'high', 'medium', 'low'];
+    const available = ['docker', 'apko'].every(backend =>
+      pair[backend]?.vulnerabilities && (!pair[backend].scanStatus || pair[backend].scanStatus === 'success'));
+    if (available) {
+      for (const backend of ['docker', 'apko']) {
+        for (const severity of severities) {
+          const count = pair[backend].vulnerabilities[severity];
+          if (!Number.isSafeInteger(count) || count < 0) {
+            throw new Error(`Invalid ${severity} count for ${flavour}/${backend}`);
+          }
+        }
+      }
+      const difference = severities.find(severity =>
+        pair.docker.vulnerabilities[severity] !== pair.apko.vulnerabilities[severity]);
+      if (!difference) {
+        indicators.docker = indicators.apko = 'Tie';
+      } else {
+        const winner = pair.docker.vulnerabilities[difference] < pair.apko.vulnerabilities[difference] ? 'docker' : 'apko';
+        indicators[winner] = '✅ Fewer findings';
+        indicators[winner === 'docker' ? 'apko' : 'docker'] = 'More findings';
+      }
+    }
+    for (const backend of ['docker', 'apko']) {
+      const r = pair[backend];
       if (!r) {
-        lines.push(`| ${flavour} | ${backend} | **Missing / failed build** | - | - | - | - | - | - | - | - |`);
+        lines.push(`| ${flavour} | ${backend} | **Missing / failed build** | - | - | - | - | - | - | - | - | Cannot compare |`);
         continue;
       }
       const present = managers.filter(name => r.managers[name]).join(', ') || 'none';
       const v = r.vulnerabilities;
-      lines.push(`| ${flavour} | ${backend} | ${r.node} | ${r.npm || 'none'} | ${present} | ${(r.bytes / 1048576).toFixed(1)} | ${r.seconds} | ${v?.critical ?? 'N/A'} | ${v?.high ?? 'N/A'} | ${v?.medium ?? 'N/A'} | ${v?.low ?? 'N/A'} |`);
+      lines.push(`| ${flavour} | ${backend} | ${r.node} | ${r.npm || 'none'} | ${present} | ${(r.bytes / 1048576).toFixed(1)} | ${r.seconds} | ${v?.critical ?? 'N/A'} | ${v?.high ?? 'N/A'} | ${v?.medium ?? 'N/A'} | ${v?.low ?? 'N/A'} | ${indicators[backend]} |`);
     }
   }
   lines.push('', 'Size is the local Docker image inspect Size field, measured with the same storage driver for both backends. Build duration includes cache restoration, package/image assembly and publishing, but excludes security scanning.',
     '', 'Vulnerability counts include both Snyk OS findings and nested application dependency findings at threshold low, not unique CVEs. Repeated dependency paths are counted separately. N/A means the scan was unavailable or failed, never zero findings.',
-    '', 'Alpine release, dependency versions, cache warmth and retained Docker package managers can differ; this is a measured comparison, not a feature-parity or vulnerability-reduction guarantee.',
+    '', '✅ marks the counterpart with fewer Snyk findings, comparing critical first, then high, medium and low (not total findings). Equal counts are a Tie; missing or unsuccessful scans Cannot compare. This is not an overall security rating.',
+    '', 'Alpine release, dependency versions and cache warmth can differ; this is a measured comparison, not a feature-parity or vulnerability-reduction guarantee.',
     '', 'Version/package-manager probes run as numeric UID 0 to inspect all baselines consistently; they do not validate the default container user.',
-    '', 'Docker runtime baselines retain their existing package-manager behaviour. Only apko runtimes enforce no package managers.');
+    '', 'Both Docker and apko runtime comparisons enforce no package managers.');
   return `${lines.join('\n')}\n`;
 }
 
 if (require.main === module) {
-  const [command, directory] = process.argv.slice(2);
+  const [command, directory, flavour] = process.argv.slice(2);
   if (command === 'collect') collect(process.env);
   else if (command === 'validate') {
     const { IMAGE_REF, NODE_MAJOR, NPM_MAJOR, BACKEND } = process.env;
@@ -130,8 +163,8 @@ if (require.main === module) {
   else if (command === 'summary' && directory) {
     const results = fs.readdirSync(directory).filter(name => name.endsWith('.json')).map(name =>
       JSON.parse(fs.readFileSync(path.join(directory, name), 'utf8')));
-    process.stdout.write(summary(results));
-  } else throw new Error('Usage: node scripts/node-image-metrics.cjs validate | collect | summary <metrics-directory>');
+    process.stdout.write(summary(results, flavour));
+  } else throw new Error('Usage: node scripts/node-image-metrics.cjs validate | collect | summary <metrics-directory> [flavour]');
 }
 
 module.exports = { countVulnerabilities, validateVersions, summary };

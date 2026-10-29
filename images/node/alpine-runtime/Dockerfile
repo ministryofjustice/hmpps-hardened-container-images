@@ -53,12 +53,14 @@ RUN apk update --no-cache -qq && \
 ENV NODE_ENV="production"
 ENV TZ="Europe/London"
 RUN rm -rf /usr/local/lib/node_modules/npm \
+           /usr/local/lib/node_modules/corepack \
            /usr/local/bin/npm \
            /usr/local/bin/npx \
            /usr/local/bin/corepack \
            /usr/local/bin/yarn \
            /usr/local/bin/yarnpkg \
-           /opt/yarn-*
+           /opt/yarn-* \
+           /sbin/apk
 RUN rm -rf /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack && \
     ln -snf \
         "/usr/share/zoneinfo/${TZ}" \
@@ -67,9 +69,10 @@ RUN rm -rf /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack && \
     && node --version \
     && test ! -e /usr/local/bin/npm \
     && test ! -e /usr/local/bin/npx \
-    && test ! -e /usr/local/bin/corepack
-
-FROM base AS security-upgrades
+    && test ! -e /usr/local/bin/corepack \
+    && for tool in apk npm npx yarn yarnpkg corepack pnpm; do \
+        if command -v "$tool"; then echo "Unexpected package manager: $tool" >&2; exit 1; fi; \
+       done
 
 
 USER appuser

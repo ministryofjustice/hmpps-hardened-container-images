@@ -46,12 +46,11 @@ is produced.
 | Node 24 runtime | `node-alpine-runtime:24-apko` | `node-alpine-runtime:24-docker` | none |
 | Node 26 runtime | `node-alpine-runtime:26-apko` | `node-alpine-runtime:26-docker` | none |
 
-There is deliberately no Node 26/npm 11 flavour. The existing Docker Node 24
-runtime is unchanged; the comparison reports its actual package managers rather
-than assuming parity. The new Docker Node 26 baseline removes Node package
-managers but retains apk. The separately published scanner flavour retains apk.
-**The Node 24 apko runtime now excludes apk**, unlike earlier versions of that
-image. Use a build flavour when installing packages.
+There is deliberately no Node 26/npm 11 flavour. Both Docker and apko runtimes
+exclude apk, npm, npx, yarn, yarnpkg, corepack and pnpm. Docker runtimes retain
+the APK package database for vulnerability scanning but remove the apk executable.
+The separately published scanner flavour retains apk. Use a build flavour when
+installing packages.
 
 [render-node-apko.rb](../../scripts/render-node-apko.rb) derives build/runtime
 configs from [apko.yaml](alpine-runtime/apko.yaml), retaining the MOJ CA,
@@ -120,10 +119,19 @@ The workflow builds all five pairs and compares same-run AMD64 images in the
 - Actual Node/npm versions and presence of apk, npm, npx, yarn, yarnpkg,
   corepack and pnpm.
 
+The artifact contains the full `node-image-comparison.md` report plus one
+`node-image-comparison-<flavour>.md` report for each of `build-24-npm11`,
+`build-24-npm12`, `build-26-npm12`, `runtime-24` and `runtime-26`.
+The full report remains in the job summary.
+The Snyk comparison column marks the counterpart with fewer findings using ✅,
+ranking critical counts first, then high, medium and low, rather than total
+findings. Equal counts show **Tie**; missing or unsuccessful scans show
+**Cannot compare**. This is not an overall security rating.
+
 Failed or skipped scans are **N/A**, not zero vulnerabilities. Missing builds
 appear explicitly. Counts are findings, not deduplicated CVEs; repeated dependency
 paths count separately. Dependency versions,
-base-image packaging, cache warmth and retained Docker package managers can differ;
+base-image packaging and cache warmth can differ;
 the comparison does not imply feature parity or guaranteed vulnerability reduction.
 Both backends build/publish AMD64 and ARM64 for comparison flavours on every
 run. Comparisons always inspect AMD64, probing versions/package managers as
@@ -275,7 +283,9 @@ architecture. CI compiles scanner APKs in parallel on native `ubuntu-24.04`
 (AMD64) and `ubuntu-24.04-arm` (ARM64) runners, without QEMU. Each architecture
 has its own compilation cache, reused across recipe updates where Go's input
 hashes still match. Only signed APKs and public keys are passed to the image
-publication job; private signing keys stay on their build runner. Other image
+publication job; private signing keys stay on their build runner. Architecture-specific
+key names are assigned before signing and preserved in artifacts, since APK
+signature verification requires the original public-key filename. Other image
 builds and the Node comparison report do not wait for scanner compilation.
 Native build logs are uploaded as `build-logs-native-scanners-<architecture>`.
 The first build still downloads and compiles dependencies; later

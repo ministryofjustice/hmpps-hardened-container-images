@@ -57,6 +57,8 @@ test('scanner compilation is native, parallel and independent of other images', 
     { arch: 'aarch64', runner: 'ubuntu-24.04-arm' },
   ]);
   assert.equal(native.needs, 'test-node-flavours');
+  assert.equal(native.env.MELANGE_KEY_NAME, 'melange-${{ matrix.arch }}');
+  assert.doesNotMatch(native.steps.find(step => step.name === 'Build signed scanner APK on native hardware').run, /\bmv\b/);
   assert.ok(!native.steps.some(step => step.uses?.startsWith('docker/setup-qemu-action')));
   const cache = native.steps.find(step => step.id === 'cache');
   assert.match(cache.with['restore-keys'], /native-scanners-v1-\$\{\{ runner.os \}\}-\$\{\{ runner.arch \}\}-\n$/);
@@ -88,8 +90,20 @@ test('Melange build helper selects only requested architectures and propagates f
     const calls = fs.readFileSync(env.DOCKER_CALLS, 'utf8');
     assert.equal(calls.trim().split('\n').length, 2);
     assert.match(calls, /build --arch aarch64/);
+    assert.match(calls, /keygen \/keys\/melange\.rsa/);
+    assert.match(calls, /--signing-key \/keys\/melange\.rsa/);
     assert.doesNotMatch(calls, /--arch x86_64/);
     assert.ok(fs.existsSync(path.join(directory, 'scanner-cache/apk')));
+    for (const arch of ['x86_64', 'aarch64']) {
+      fs.writeFileSync(env.DOCKER_CALLS, '');
+      const signed = spawnSync('bash', ['scripts/build-melange.sh'], {
+        env: { ...env, MELANGE_ARCHES: arch, MELANGE_KEY_NAME: `melange-${arch}` }, encoding: 'utf8',
+      });
+      assert.equal(signed.status, 0, signed.stderr);
+      const signedCalls = fs.readFileSync(env.DOCKER_CALLS, 'utf8');
+      assert.ok(signedCalls.includes(`keygen /keys/melange-${arch}.rsa`));
+      assert.ok(signedCalls.includes(`--signing-key /keys/melange-${arch}.rsa`));
+    }
     const failure = spawnSync('bash', ['scripts/build-melange.sh'], {
       env: { ...env, DOCKER_STATUS: '17' }, encoding: 'utf8',
     });
