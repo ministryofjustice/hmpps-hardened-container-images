@@ -19,21 +19,31 @@ These images are automatically built, scanned, and published to GitHub Container
 
 ## Available Images
 
+Images are grouped by ecosystem/type beneath
+`ghcr.io/ministryofjustice/hmpps-hardened-container-images/`.
+Tags use `<flavour>-<branch-or-release>`, including the build method to prevent
+Docker/apko collisions. For example, `node-alpine:24-npm11-apko-main` and
+`node-alpine:24-npm11-docker-v1.2.3`.
+Only the new grouped paths are published; old package names are no longer
+updated. There is no shared `latest` tag. Docker labels and apko annotations link
+packages to this source repository; GHCR Actions write permissions are still
+required if an existing package does not inherit repository access.
+
 ### Java
 
 #### Eclipse Temurin
 
 | Image | Description |
 |---------|-------------|
-| `ghcr.io/ministryofjustice/hmpps-hardened-eclipse-temurin-java21` | Eclipse Temurin Java 21 |
-| `ghcr.io/ministryofjustice/hmpps-hardened-eclipse-temurin-java25` | Eclipse Temurin Java 25 |
+| `ghcr.io/ministryofjustice/hmpps-hardened-container-images/java-temurin:21-docker-main` | Eclipse Temurin Java 21 |
+| `ghcr.io/ministryofjustice/hmpps-hardened-container-images/java-temurin:25-docker-main` | Eclipse Temurin Java 25 |
 
 #### Distroless
 
 | Image | Description |
 |---------|-------------|
-| `ghcr.io/ministryofjustice/hmpps-hardened-distroless-java21` | Distroless Java 21 |
-| `ghcr.io/ministryofjustice/hmpps-hardened-distroless-java25` | Distroless Java 25 |
+| `ghcr.io/ministryofjustice/hmpps-hardened-container-images/java-distroless:21-docker-main` | Distroless Java 21 |
+| `ghcr.io/ministryofjustice/hmpps-hardened-container-images/java-distroless:25-docker-main` | Distroless Java 25 |
 
 ---
 
@@ -41,18 +51,19 @@ These images are automatically built, scanned, and published to GitHub Container
 
 | Image | Description |
 |---------|-------------|
-| `ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-24` | Alpine Node.js 24 |
-| `ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-24-npm12` | Docker Node.js 24/npm 12 build baseline with apk |
-| `ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-26-npm12` | Docker Node.js 26/npm 12 build baseline with apk |
-| `ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-build-24-npm11-apko` | Apko Node.js 24 build image with Melange-packaged npm 11 and apk |
-| `ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-build-24-npm12-apko` | Apko Node.js 24 build image with Melange-packaged npm 12 and apk |
-| `ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-26-npm12-apko-build` | Apko Node.js 26 build image with Melange-packaged npm 12 and apk |
-| `ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-runtime-24` | Alpine runtime image with npm, yarn and corepack removed |
-| `ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-runtime-26` | Docker Node.js 26 runtime baseline; apk retained |
-| `ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-runtime-24-apko` | Apko Node.js 24 runtime without any package managers |
-| `ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-runtime-26-apko` | Apko Node.js 26 runtime without any package managers |
-| `ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-runtime-24-apko-scanners` | Apko Node runtime with Scorecard, Conftest, Betterleaks, Hadolint and Snyk; no Go toolchain |
-| `ghcr.io/ministryofjustice/hmpps-hardened-distroless-node-24` | Distroless Node.js 24 |
+| `ghcr.io/ministryofjustice/hmpps-hardened-container-images/node-alpine:24-npm11-docker-main` | Docker Node.js 24/npm 11 build baseline with apk |
+| `ghcr.io/ministryofjustice/hmpps-hardened-container-images/node-alpine:24-npm12-docker-main` | Docker Node.js 24/npm 12 build baseline with apk |
+| `ghcr.io/ministryofjustice/hmpps-hardened-container-images/node-alpine:26-npm12-docker-main` | Docker Node.js 26/npm 12 build baseline with apk |
+| `ghcr.io/ministryofjustice/hmpps-hardened-container-images/node-alpine:24-npm11-apko-main` | Apko Node.js 24 build image with Melange-packaged npm 11 and apk |
+| `ghcr.io/ministryofjustice/hmpps-hardened-container-images/node-alpine:24-npm12-apko-main` | Apko Node.js 24 build image with Melange-packaged npm 12 and apk |
+| `ghcr.io/ministryofjustice/hmpps-hardened-container-images/node-alpine:26-npm12-apko-main` | Apko Node.js 26 build image with Melange-packaged npm 12 and apk |
+| `ghcr.io/ministryofjustice/hmpps-hardened-container-images/node-alpine-runtime:24-docker-main` | Existing Docker Node.js 24 runtime baseline |
+| `ghcr.io/ministryofjustice/hmpps-hardened-container-images/node-alpine-runtime:24-apko-main` | Apko Node.js 24 runtime without any package managers |
+| `ghcr.io/ministryofjustice/hmpps-hardened-container-images/node-alpine-runtime:24-scanners-apko-main` | Apko Node runtime with Scorecard, Conftest, Betterleaks, Hadolint and Snyk; no Go toolchain |
+| `ghcr.io/ministryofjustice/hmpps-hardened-container-images/node-distroless:24-docker-main` | Distroless Node.js 24 |
+
+Node 26 runtime Docker/apko recipes remain available for local builds but their
+pipeline entries are currently disabled.
 
 See [Node flavours and comparison reports](images/node/README.md) for local builds
 and pipeline measurements of vulnerabilities, image size, build duration, versions
@@ -65,7 +76,7 @@ the apko Node 24 runtime now excludes apk. The scanner flavour remains separate.
 
 | Image | Description |
 |---------|-------------|
-| `ghcr.io/ministryofjustice/hmpps-hardened-python-alpine-3-13` | Python 3.13 Alpine |
+| `ghcr.io/ministryofjustice/hmpps-hardened-container-images/python-alpine:3.13-docker-main` | Python 3.13 Alpine |
 
 ---
 
@@ -126,25 +137,25 @@ Pulling the same tag automatically retrieves the correct image for your platform
 ### Java 25 (Temurin)
 
 ```dockerfile
-FROM ghcr.io/ministryofjustice/hmpps-hardened-eclipse-temurin-java25:v1.0.0
+FROM ghcr.io/ministryofjustice/hmpps-hardened-container-images/java-temurin:25-docker-v1.0.0
 ```
 
 ### Java 25 (Distroless)
 
 ```dockerfile
-FROM ghcr.io/ministryofjustice/hmpps-hardened-distroless-java25:v1.0.0
+FROM ghcr.io/ministryofjustice/hmpps-hardened-container-images/java-distroless:25-docker-v1.0.0
 ```
 
 ### Node Runtime
 
 ```dockerfile
-FROM ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-runtime-24:v1.0.0
+FROM ghcr.io/ministryofjustice/hmpps-hardened-container-images/node-alpine-runtime:24-apko-v1.0.0
 ```
 
 ### Python
 
 ```dockerfile
-FROM ghcr.io/ministryofjustice/hmpps-hardened-python-alpine-3-13:v1.0.0
+FROM ghcr.io/ministryofjustice/hmpps-hardened-container-images/python-alpine:3.13-docker-v1.0.0
 ```
 
 ---
@@ -169,10 +180,10 @@ v1.2.3
 Produces:
 
 ```text
-ghcr.io/ministryofjustice/hmpps-hardened-eclipse-temurin-java25:v1.2.3
-ghcr.io/ministryofjustice/hmpps-hardened-distroless-java25:v1.2.3
-ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-runtime-24:v1.2.3
-ghcr.io/ministryofjustice/hmpps-hardened-python-alpine-3-13:v1.2.3
+ghcr.io/ministryofjustice/hmpps-hardened-container-images/java-temurin:25-docker-v1.2.3
+ghcr.io/ministryofjustice/hmpps-hardened-container-images/java-distroless:25-docker-v1.2.3
+ghcr.io/ministryofjustice/hmpps-hardened-container-images/node-alpine-runtime:24-apko-v1.2.3
+ghcr.io/ministryofjustice/hmpps-hardened-container-images/python-alpine:3.13-docker-v1.2.3
 ```
 
 Development builds are tagged using the current branch name.
@@ -180,8 +191,8 @@ Development builds are tagged using the current branch name.
 Example:
 
 ```text
-main
-feature/improve-security
+24-npm11-apko-main
+24-npm11-apko-feature-improve-security
 ```
 
 These tags should not be used for production deployments.
@@ -265,25 +276,25 @@ Production workloads should always pin to a specific release version.
 Recommended:
 
 ```dockerfile
-FROM ghcr.io/ministryofjustice/hmpps-hardened-eclipse-temurin-java25:v1.2.3
+FROM ghcr.io/ministryofjustice/hmpps-hardened-container-images/java-temurin:25-docker-v1.2.3
 ```
 
 For maximum supply-chain integrity, pin by digest:
 
 ```dockerfile
-FROM ghcr.io/ministryofjustice/hmpps-hardened-eclipse-temurin-java25:v1.2.3@sha256:<digest>
+FROM ghcr.io/ministryofjustice/hmpps-hardened-container-images/java-temurin:25-docker-v1.2.3@sha256:<digest>
 ```
 
 Avoid:
 
 ```dockerfile
-FROM ghcr.io/ministryofjustice/hmpps-hardened-eclipse-temurin-java25:latest
+FROM ghcr.io/ministryofjustice/hmpps-hardened-container-images/java-temurin:latest
 ```
 
 or
 
 ```dockerfile
-FROM ghcr.io/ministryofjustice/hmpps-hardened-eclipse-temurin-java25:main
+FROM ghcr.io/ministryofjustice/hmpps-hardened-container-images/java-temurin:25-docker-main
 ```
 
 ---
@@ -310,13 +321,13 @@ images/
 Images are published to:
 
 ```text
-ghcr.io/ministryofjustice
+ghcr.io/ministryofjustice/hmpps-hardened-container-images/<ecosystem-type>
 ```
 
 Example:
 
 ```text
-ghcr.io/ministryofjustice/hmpps-hardened-eclipse-temurin-java25
+ghcr.io/ministryofjustice/hmpps-hardened-container-images/java-temurin:25-docker-main
 ```
 
 ---

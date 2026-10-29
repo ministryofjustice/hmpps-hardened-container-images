@@ -6,10 +6,10 @@ Standardized base image for JVM applications in HMPPS. Provides a consistent, le
 
 | Image | Variant Tag | OS | Arch (multi-platform) | Notes |
 |-------|-------------|----|-----------------------|-------|
-| hmpps-eclipse-temurin | 21-jre-jammy | Ubuntu | amd64, arm64 | LTS line (Java 21) |
-| hmpps-eclipse-temurin | 25-jre-jammy | Ubuntu | amd64, arm64 | Current default line |
-| hmpps-distroless-java | 21-jre | Distroless | amd64, arm64 | Minimal runtime footprint (no shell/package manager) |
-| hmpps-distroless-java | 25-jre | Distroless | amd64, arm64 | Minimal runtime footprint (no shell/package manager) |
+| java-temurin | 21-docker-main | Ubuntu | amd64, arm64 | LTS line (Java 21) |
+| java-temurin | 25-docker-main | Ubuntu | amd64, arm64 | Current default line |
+| java-distroless | 21-docker-main | Distroless | amd64, arm64 | Minimal runtime footprint (no shell/package manager) |
+| java-distroless | 25-docker-main | Distroless | amd64, arm64 | Minimal runtime footprint (no shell/package manager) |
 
 ## Distroless Variant
 
@@ -24,24 +24,19 @@ The distroless variants use Google's minimal distroless base images instead of f
 Images are published to:
 
 ```
-ghcr.io/ministryofjustice/hmpps-eclipse-temurin
-ghcr.io/ministryofjustice/hmpps-distroless-java
+ghcr.io/ministryofjustice/hmpps-hardened-container-images/java-temurin
+ghcr.io/ministryofjustice/hmpps-hardened-container-images/java-distroless
 ```
 
 Tags applied (via GitHub Actions metadata):
 
 | Tag Type | Example | Purpose |
 |----------|---------|---------|
-| Date schedule | 20241120 | Daily rebuild identifier |
-| Branch / PR | initial-commit | Trace source ref |
-| SHA | sha-<short> | Exact source immutability |
-| latest | latest | Published only for variants explicitly enabled in CI |
-| Raw variant | 25-jre-jammy | Stable, explicit variant tag |
+| Branch / PR | 25-docker-feature-update | Flavour plus sanitized source ref |
+| Release | 25-docker-v1.2.3 | Versioned flavour |
 
-Current latest mappings in CI:
-
-- `ghcr.io/ministryofjustice/hmpps-eclipse-temurin:latest` -> `25-jre-jammy`
-- `ghcr.io/ministryofjustice/hmpps-distroless-java:latest` -> `25-jre`
+Only grouped paths are published; old names are no longer updated. There are no
+`latest`, bare variant, date or SHA aliases. Pin release tags and digests for production.
 
 ## JVM Defaults Explained
 
@@ -77,7 +72,7 @@ WORKDIR /src
 COPY . .
 RUN ./gradlew --no-daemon assemble
 
-FROM ghcr.io/ministryofjustice/hmpps-eclipse-temurin:21-jre-jammy
+FROM ghcr.io/ministryofjustice/hmpps-hardened-container-images/java-temurin:21-docker-main
 WORKDIR /app
 COPY --from=build /src/build/libs/app.jar ./app.jar
 USER 2000

@@ -27,7 +27,7 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '24'
-      - run: node --test tests/node-flavours.test.cjs
+      - run: node --test tests/node-flavours.test.cjs tests/image-reference.test.cjs
   DevSecOps:
     uses: ./.github/workflows/DevSecOps.yml
     secrets:
@@ -41,7 +41,7 @@ jobs:
   build-scan-push:
     needs: test-node-flavours
     # needs: DevSecOps
-    name: Build-Scan-Push
+    name: Build-Scan-Push (${{ matrix.image_type }}, ${{ matrix.image_variant }})
     runs-on: ubuntu-latest
     timeout-minutes: ${{ matrix.melange_config && 60 || 30 }}
     env:
@@ -50,50 +50,48 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - image_name: hardened-eclipse-temurin-java21
+          - image_type: java-temurin
+            image_variant: 21-docker
             context: images/java/eclipse-temurin
             dockerfile: images/java/eclipse-temurin/Dockerfile.java21
-            tag_prefix: ''
-            publish_latest: false
-          - image_name: hardened-eclipse-temurin-java25
+          - image_type: java-temurin
+            image_variant: 25-docker
             context: images/java/eclipse-temurin
             dockerfile: images/java/eclipse-temurin/Dockerfile.java25
-            tag_prefix: ''
-            publish_latest: true
-          - image_name: hardened-distroless-java21
+          - image_type: java-distroless
+            image_variant: 21-docker
             context: images/java/distroless
             dockerfile: images/java/distroless/Dockerfile.java21
-            tag_prefix: ''
-            publish_latest: false
-          - image_name: hardened-distroless-java25
+          - image_type: java-distroless
+            image_variant: 25-docker
             context: images/java/distroless
             dockerfile: images/java/distroless/Dockerfile.java25
-            tag_prefix: ''
-            publish_latest: true
-          - image_name: hardened-alpine-node-24
+          - image_type: node-alpine
+            image_variant: 24-npm11-docker
             context: images/node/alpine
             dockerfile: images/node/alpine/Dockerfile.node24-npm11
-            tag_prefix: ''
-            publish_latest: false
             comparison: build-24-npm11
             backend: docker
             node_major: '24'
             npm_major: '11'
-          - image_name: hardened-alpine-node-24-npm12
+          - image_type: node-alpine
+            image_variant: 24-npm12-docker
             context: images/node/alpine
             dockerfile: images/node/alpine/Dockerfile.node24-npm12
             comparison: build-24-npm12
             backend: docker
             node_major: '24'
             npm_major: '12'
-          - image_name: hardened-alpine-node-26-npm12
+          - image_type: node-alpine
+            image_variant: 26-npm12-docker
             context: images/node/alpine
             dockerfile: images/node/alpine/Dockerfile.node26-npm12
             comparison: build-26-npm12
             backend: docker
             node_major: '26'
             npm_major: '12'
-          - image_name: hardened-alpine-node-build-24-npm11-apko
+          - image_type: node-alpine
+            image_variant: 24-npm11-apko
             apko_config: images/node/alpine-runtime/apko.yaml
             melange_config: images/node/alpine/melange.npm11.yaml
             melange_package: hmpps-npm11=11.12.1-r0
@@ -102,7 +100,8 @@ jobs:
             node_major: '24'
             npm_major: '11'
             flavour: build
-          - image_name: hardened-alpine-node-build-24-npm12-apko
+          - image_type: node-alpine
+            image_variant: 24-npm12-apko
             apko_config: images/node/alpine-runtime/apko.yaml
             melange_config: images/node/alpine/melange.npm12.yaml
             melange_package: hmpps-npm12=12.2.0-r0
@@ -111,7 +110,8 @@ jobs:
             node_major: '24'
             npm_major: '12'
             flavour: build
-          - image_name: hardened-alpine-node-26-npm12-apko-build
+          - image_type: node-alpine
+            image_variant: 26-npm12-apko
             apko_config: images/node/alpine-runtime/apko.yaml
             melange_config: images/node/alpine/melange.npm12.yaml
             melange_package: hmpps-npm12=12.2.0-r0
@@ -120,52 +120,50 @@ jobs:
             node_major: '26'
             npm_major: '12'
             flavour: build
-          - image_name: hardened-alpine-node-runtime-24
+          - image_type: node-alpine-runtime
+            image_variant: 24-docker
             context: images/node/alpine-runtime
             dockerfile: images/node/alpine-runtime/Dockerfile
-            tag_prefix: ''
-            publish_latest: true
             comparison: runtime-24
             backend: docker
             node_major: '24'
-          # - image_name: hardened-alpine-node-runtime-26
+          # - image_type: node-alpine-runtime
+          #   image_variant: 26-docker
           #   context: images/node/alpine-runtime
           #   dockerfile: images/node/alpine-runtime/Dockerfile.node26
           #   comparison: runtime-26
           #   backend: docker
           #   node_major: '26'
-          - image_name: hardened-alpine-node-runtime-24-apko
+          - image_type: node-alpine-runtime
+            image_variant: 24-apko
             context: images/node/alpine-runtime
             apko_config: images/node/alpine-runtime/apko.yaml
-            tag_prefix: ''
-            publish_latest: true
             comparison: runtime-24
             backend: apko
             node_major: '24'
             flavour: runtime
-          # - image_name: hardened-alpine-node-runtime-26-apko
+          # - image_type: node-alpine-runtime
+          #   image_variant: 26-apko
           #   apko_config: images/node/alpine-runtime/apko.yaml
           #   comparison: runtime-26
           #   backend: apko
           #   node_major: '26'
           #   flavour: runtime
-          - image_name: hardened-alpine-node-runtime-24-apko-scanners
+          - image_type: node-alpine-runtime
+            image_variant: 24-scanners-apko
             context: images/node/alpine-runtime
             apko_config: images/node/alpine-runtime/apko.yaml
             melange_config: images/node/alpine-runtime/melange.scanners.yaml
             melange_package: hmpps-node-scanners=1.0.0-r3
             scanners: true
-            tag_prefix: ''
-            publish_latest: true
-          - image_name: hardened-distroless-node-24
+          - image_type: node-distroless
+            image_variant: 24-docker
             context: images/node/distroless
             dockerfile: images/node/distroless/Dockerfile
-            publish_latest: true
-          - image_name: hardened-python-alpine-3-13
+          - image_type: python-alpine
+            image_variant: 3.13-docker
             context: images/python/alpine
             dockerfile: images/python/alpine/Dockerfile
-            tag_prefix: ''
-            publish_latest: true
     permissions:
       packages: write
       security-events: write
@@ -180,25 +178,23 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
 
-      - name: Sanitise Tag Name
+      - name: Resolve grouped image reference
         id: snyk_image
-        run: |
-          TAG=$(echo "${{ env.IMAGE_TAG }}" \
-            | tr '[:upper:]' '[:lower:]' \
-            | sed 's|[^a-z0-9.-]|-|g' \
-            | cut -c1-100
-          )
-          TAG=$(echo "$TAG" | tr '/' '-' | tr '_' '-' | tr '[:upper:]' '[:lower:]')
-          echo "image_tag=${TAG}" >> "$GITHUB_OUTPUT"
-          echo "image_ref=${{ env.REGISTRY }}/${{ github.repository_owner }}/hmpps-${{ matrix.image_name }}:${TAG}" >> "$GITHUB_OUTPUT"
+        env:
+          IMAGE_TYPE: ${{ matrix.image_type }}
+          IMAGE_VARIANT: ${{ matrix.image_variant }}
+        run: node scripts/image-reference.cjs >> "$GITHUB_OUTPUT"
 
       - name: Docker metadata
         id: meta
         uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302
         with:
-          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/hmpps-${{ matrix.image_name }}
+          images: ${{ steps.snyk_image.outputs.image_repository }}
           tags: |
             type=raw,value=${{ steps.snyk_image.outputs.image_tag }}
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
@@ -298,6 +294,7 @@ jobs:
           COMPARISON: ${{ matrix.comparison }}
           NODE_MAJOR: ${{ matrix.node_major }}
           NPM_MAJOR: ${{ matrix.npm_major }}
+          SOURCE_REPOSITORY: ${{ github.server_url }}/${{ github.repository }}
         run: |
           if [ ! -f "$GITHUB_WORKSPACE/$APKO_CONFIG" ]; then
             echo "::error file=$APKO_CONFIG::Apko configuration is missing from the checkout. Ensure it is committed."
@@ -366,6 +363,7 @@ jobs:
             publish \
             --arch "$APKO_ARCHES" \
             --sbom-path /sbom \
+            --annotations "org.opencontainers.image.source:$SOURCE_REPOSITORY" \
             "${extra_args[@]}" \
             "$APKO_CONFIG" \
             "$APKO_IMAGE_REF"

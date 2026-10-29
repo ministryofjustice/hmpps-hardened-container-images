@@ -6,9 +6,9 @@ Lean, standardized Node.js base for HMPPS apps across Alpine and distroless vari
 
 | Image | Tag | Description |
 |-------|-----|-------------|
-| `hmpps-node` | `24-alpine` | Full Node.js 24 Alpine image including npm, yarn, and corepack |
-| `hmpps-node` | `24-alpine-runtime` | Runtime-only image with package managers removed for production |
-| `hmpps-distroless-node` | `24` | Distroless runtime image with Node.js only — minimal attack surface (no shell/package manager) |
+| `node-alpine` | `24-npm11-docker-main` | Node.js 24 build image with npm 11 and apk |
+| `node-alpine-runtime` | `24-apko-main` | Runtime-only image without package managers |
+| `node-distroless` | `24-docker-main` | Distroless runtime image with Node.js only — minimal attack surface (no shell/package manager) |
 
 ## Distroless Variant
 
@@ -31,16 +31,22 @@ The distroless variant uses Google's minimal distroless base image, reducing att
 
 ## Alpine build and runtime flavours
 
-All names below have the prefix `ghcr.io/ministryofjustice/hmpps-` and use the
-workflow's branch or release tag.
+All references below have the prefix
+`ghcr.io/ministryofjustice/hmpps-hardened-container-images/`.
+Append `-main`, a sanitized branch name, or a release such as `-v1.2.3` to each
+flavour tag. Build methods have separate tags in the same type repository.
+Old flavour-specific package names are no longer published; no `latest` alias
+is produced.
 
 | Flavour | apko/Melange image suffix | Docker comparison image suffix | Package managers in apko image |
 |---------|--------------------------|--------------------------------|-------------------------------|
-| Node 24, npm 11.12.1 | `hardened-alpine-node-build-24-npm11-apko` | `hardened-alpine-node-24` | npm, npx, apk |
-| Node 24, npm 12.2.0 | `hardened-alpine-node-build-24-npm12-apko` | `hardened-alpine-node-24-npm12` | npm, npx, apk |
-| Node 26, npm 12.2.0 | `hardened-alpine-node-26-npm12-apko-build` | `hardened-alpine-node-26-npm12` | npm, npx, apk |
-| Node 24 runtime | `hardened-alpine-node-runtime-24-apko` | `hardened-alpine-node-runtime-24` | none |
-| Node 26 runtime | `hardened-alpine-node-runtime-26-apko` | `hardened-alpine-node-runtime-26` | none |
+| Node 24, npm 11.12.1 | `node-alpine:24-npm11-apko` | `node-alpine:24-npm11-docker` | npm, npx, apk |
+| Node 24, npm 12.2.0 | `node-alpine:24-npm12-apko` | `node-alpine:24-npm12-docker` | npm, npx, apk |
+| Node 26, npm 12.2.0 | `node-alpine:26-npm12-apko` | `node-alpine:26-npm12-docker` | npm, npx, apk |
+| Node 24 runtime | `node-alpine-runtime:24-apko` | `node-alpine-runtime:24-docker` | none |
+
+Node 26 runtime recipes are available locally but both publishing entries are
+currently disabled; this refactor does not re-enable them.
 
 There is deliberately no Node 26/npm 11 flavour. The existing Docker Node 24
 runtime is unchanged; the comparison reports its actual package managers rather
@@ -103,7 +109,7 @@ The images run as numeric UID 0 by default; `appuser` is available via
 
 ### CI comparisons
 
-The workflow builds all five pairs and compares same-run AMD64 images in the
+The workflow builds the four enabled pairs and compares same-run AMD64 images in the
 **Compare Docker and apko/Melange Node images** job. Its job summary and
 `node-image-comparison` artifact include:
 
@@ -124,12 +130,13 @@ numeric UID 0 independently of the configured default container user.
 No extra scan service is introduced: both
 backends use the existing pinned shared Snyk action, at threshold `low`.
 
-Run configuration/report tests with `node --test tests/node-flavours.test.cjs`.
+Run configuration/report/tagging tests with
+`node --test tests/node-flavours.test.cjs tests/image-reference.test.cjs`.
 
 ### Scanner runtime flavour
 
 CI also publishes
-`ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-runtime-24-apko-scanners`.
+`ghcr.io/ministryofjustice/hmpps-hardened-container-images/node-alpine-runtime:24-scanners-apko-main`.
 It uses the same apko configuration plus the signed `hmpps-node-scanners` APK:
 
 | Tool | Version | Build toolchain |
@@ -174,7 +181,7 @@ Override the entrypoint to run a scanner, for example:
 
 ```sh
 docker run --rm --entrypoint conftest \
-  ghcr.io/ministryofjustice/hmpps-hardened-alpine-node-runtime-24-apko-scanners:main \
+  ghcr.io/ministryofjustice/hmpps-hardened-container-images/node-alpine-runtime:24-scanners-apko-main \
   --version
 ```
 
@@ -259,23 +266,23 @@ exact Go pin must remain available in edge/community or builds will fail.
 
 Registries:
 
-- `ghcr.io/ministryofjustice/hmpps-node`
-- `ghcr.io/ministryofjustice/hmpps-distroless-node`
+- `ghcr.io/ministryofjustice/hmpps-hardened-container-images/node-alpine`
+- `ghcr.io/ministryofjustice/hmpps-hardened-container-images/node-alpine-runtime`
+- `ghcr.io/ministryofjustice/hmpps-hardened-container-images/node-distroless`
 
 Common tags:
 
-- `hmpps-node`: `24-alpine`, `24-alpine-runtime`, date tags (YYYYMMDD), `latest`
-- `hmpps-distroless-node`: `24`, date tags (YYYYMMDD), `latest`
+- `node-alpine`: `24-npm11-apko-main`, `24-npm12-docker-main`, `26-npm12-apko-main`
+- `node-alpine-runtime`: `24-apko-main`, `24-docker-main`, `24-scanners-apko-main`
+- `node-distroless`: `24-docker-main`
 
-Current latest mappings in CI:
-
-- `ghcr.io/ministryofjustice/hmpps-node:latest` -> `24-alpine-runtime`
-- `ghcr.io/ministryofjustice/hmpps-distroless-node:latest` -> `24`
+Replace `main` with a sanitized branch or release tag. CI does not publish
+`latest`, bare version, date or SHA aliases. Pin release tags and digests for production.
 
 ## Usage (simple)
 
 ```dockerfile
-FROM ghcr.io/ministryofjustice/hmpps-node:24-alpine
+FROM ghcr.io/ministryofjustice/hmpps-hardened-container-images/node-alpine:24-npm11-apko-main
 WORKDIR /app
 COPY --chown=appuser:appgroup package*.json ./
 RUN npm ci --omit=dev --no-audit
@@ -289,7 +296,7 @@ CMD ["npm", "start"]
 
 - Add build tools (git, curl, etc.) in your app image only if needed.
 - To switch Node version, pick the matching published tag.
-- Use `24-alpine-runtime` for the final stage of multi-stage builds — npm/yarn are not needed at runtime and their removal reduces the attack surface.
+- Use `node-alpine-runtime:24-apko-main` for the final stage of multi-stage builds — npm/yarn are not needed at runtime and their removal reduces the attack surface.
 
 ## Usage (multi-stage)
 
@@ -300,7 +307,7 @@ ARG GIT_REF
 ARG GIT_BRANCH
 
 # Stage: build assets
-FROM ghcr.io/ministryofjustice/hmpps-node:24-alpine AS build
+FROM ghcr.io/ministryofjustice/hmpps-hardened-container-images/node-alpine:24-npm11-apko-main AS build
 
 ARG BUILD_NUMBER
 ARG GIT_REF
@@ -323,7 +330,7 @@ RUN npm run build
 RUN npm prune --no-audit --no-fund --omit=dev
 
 # Stage: copy production assets and dependencies
-FROM ghcr.io/ministryofjustice/hmpps-node:24-alpine-runtime
+FROM ghcr.io/ministryofjustice/hmpps-hardened-container-images/node-alpine-runtime:24-apko-main
 
 ARG BUILD_NUMBER
 ARG GIT_REF
